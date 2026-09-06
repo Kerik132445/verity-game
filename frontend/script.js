@@ -4,6 +4,34 @@ let messagesLeft = 3
 let isWaitingForReply = false
 
 let inventory = []
+let messages = []
+
+loadGame()
+
+
+function saveGame() {
+	const gameData = {
+		inventory: inventory,
+		messagesLeft: messagesLeft,
+		messages: messages
+	}
+
+	localStorage.setItem("verityGame", JSON.stringify(gameData))
+}
+
+function loadGame() {
+	const savedGame = localStorage.getItem("verityGame")
+
+	if (!savedGame) {
+		return []
+	}
+
+	const gameData = JSON.parse(savedGame)
+
+	messagesLeft = gameData.messagesLeft ?? 3
+	inventory = gameData.inventory ?? []
+	messages = gameData.messages ?? []
+}
 
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -13,6 +41,10 @@ function rewardAd() {
 	messagesLeft += 3
 
 	document.getElementById("messagesLeft").textContent = messagesLeft;
+
+	renderMessages()
+
+	saveGame()
 
 	document.getElementById("normalInput").style.display = "flex";
 	document.getElementById("adButton").style.display = "none";
@@ -44,6 +76,8 @@ async function sendMessage() {
 
 	messagesLeft--
 
+	saveGame()
+
 	if (messagesLeft <= 0) {
 		document.getElementById("normalInput").style.display = "none";
 		document.getElementById("adButton").style.display = "block";
@@ -62,15 +96,22 @@ async function sendMessage() {
 
 	document.getElementById("messageInput").value = ""
 
-	const messages = document.getElementById("messages")
+	const messagesContainer = document.getElementById("messages")
 
 	const newMessage = document.createElement("div")
 	newMessage.classList.add("message", "user")
 
 	newMessage.textContent = message
-	messages.appendChild(newMessage)
+	messagesContainer.appendChild(newMessage)
 
-	messages.scrollTop = messages.scrollHeight;
+	messages.push({
+		sender: "user",
+		text: message
+	})
+
+	saveGame()
+
+	messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
 
 	const typingMessage = document.createElement("div")
@@ -83,9 +124,9 @@ async function sendMessage() {
 		<span></span>
 	`
 
-	messages.appendChild(typingMessage);
+	messagesContainer.appendChild(typingMessage);
 
-	messages.scrollTop = messages.scrollHeight;
+	messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
 	try {
 		const response = await fetch("http://127.0.0.1:8000/chat", {
@@ -109,12 +150,20 @@ async function sendMessage() {
 		typingMessage.remove();
 
 		const verityMessage = document.createElement("div");
+
 		verityMessage.classList.add("message", "verity");
 
 		verityMessage.textContent = data.reply;
-		messages.appendChild(verityMessage);
+		messagesContainer.appendChild(verityMessage);
 
-		messages.scrollTop = messages.scrollHeight;
+		messages.push({
+			sender: "verity",
+			text: data.reply
+		})
+
+		saveGame()
+
+		messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
 	} catch (error) {
 
@@ -127,9 +176,9 @@ async function sendMessage() {
 
 		errorMessage.textContent = "Что-то пошло не так...";
 
-		messages.appendChild(errorMessage);
+		messagesContainer.appendChild(errorMessage);
 
-		messages.scrollTop = messages.scrollHeight;
+		messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
 	} finally {
 
@@ -188,28 +237,36 @@ const items = [
 		id: "coin",
 		name: "Старая монета",
 		image: "images/old_coin.png",
-		description: "Странная старая монета."
+		description: "Странная старая монета.",
+		rarity: "common",
+		chance: 50
 	},
 
 	{
 		id: "key",
 		name: "Маленький ключ",
 		image: "images/key.webp",
-		description: "Неизвестно, что он открывает."
+		description: "Неизвестно, что он открывает.",
+		rarity: "uncommon",
+		chance: 30
 	},
 
 	{
 		id: "cassette",
 		name: "Кассета",
 		image: "images/cassette.png",
-		description: "Верити почему-то не хочет, чтобы ты её включал."
+		description: "Верити почему-то не хочет, чтобы ты её включал.",
+		rarity: "rare",
+		chance: 15
 	},
 
 	{
 		id: "note",
 		name: "Старая записка",
 		image: "images/note.webp",
-		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"'
+		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
+		rarity: "legendary",
+		chance: 5
 	},
 ]
 
@@ -254,21 +311,32 @@ function renderInventory() {
 
 function rewardItemAd() {
 	if (inventory.length >= 15) {
-		showItemNotification("Инвентарь заполнен!");
-		return;
+		showItemNotification("Инвентарь заполнен!")
+		return
 	}
 
-	const randomItem = items[Math.floor(Math.random() * items.length)];
+	const randomItem = getRandomItem()
 
-	inventory.push(randomItem.id);
+	inventory.push(randomItem.id)
 
-	showItemNotification(`Ты получил: ${randomItem.name}`);
+	saveGame()
 
-	openInventory();
+	showItemNotification(`Ты получил: ${randomItem.name}`)
+
+	openInventory()
 
 	setTimeout(() => {
-		highlightItem(inventory.length - 1);
-	}, 100);
+		highlightItem(inventory.length - 1)
+	}, 100)
+
+	messagesLeft += 1
+
+	document.getElementById("messagesLeft").textContent = messagesLeft
+
+	saveGame()
+
+	document.getElementById("normalInput").style.display = "flex"
+	document.getElementById("adButton").style.display = "none"
 }
 
 function showItemNotification(text) {
@@ -304,3 +372,45 @@ document.getElementById("itemAdButton").addEventListener("click", rewardItemAd)
 document.getElementById("skinButton").addEventListener("click", () => {
 	alert("Система скинов пока находится в разработке.");
 })
+
+
+document.getElementById("messagesLeft").textContent = messagesLeft
+
+renderMessages()
+
+function getRandomItem() {
+	const random = Math.random() * 100
+
+	let currentChance = 0
+
+	for (const item of items) {
+		currentChance += item.chance
+
+		if (random < currentChance) {
+			return item
+		}
+	}
+
+	return items[0]
+}
+
+function renderMessages() {
+	const messagesContainer = document.getElementById("messages")
+
+	messagesContainer.innerHTML = ""
+
+	for (const message of messages) {
+		const messageElement = document.createElement("div")
+
+		messageElement.classList.add(
+			"message",
+			message.sender === "user" ? "user" : "verity"
+		)
+
+		messageElement.textContent = message.text
+
+		messagesContainer.appendChild(messageElement)
+	}
+
+	messagesContainer.scrollTop = messagesContainer.scrollHeight
+}
