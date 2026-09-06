@@ -1,7 +1,18 @@
 console.log("SCRIPT JS ЗАГРУЗИЛСЯ");
 
+let messagesLeft = 3
+
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function rewardAd() {
+	messagesLeft += 3
+
+	document.getElementById("messagesLeft").textContent = messagesLeft;
+
+	document.getElementById("normalInput").style.display = "flex";
+	document.getElementById("adButton").style.display = "none";
 }
 
 
@@ -12,6 +23,18 @@ async function sendMessage() {
 	if (!message.trim()) {
 		return
 	}
+	if (messagesLeft <= 0) {
+		return
+	}
+
+	messagesLeft--
+
+	if (messagesLeft <= 0) {
+		document.getElementById("normalInput").style.display = "none";
+		document.getElementById("adButton").style.display = "block";
+	}
+
+	document.getElementById("messagesLeft").textContent = messagesLeft
 
 	document.getElementById("messageInput").value = ""
 
@@ -68,3 +91,5 @@ document.getElementById("messageInput").addEventListener("keydown", (event) => {
 		sendMessage()
 	}
 })
+
+document.getElementById("adButton").addEventListener("click", rewardAd)

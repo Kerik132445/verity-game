@@ -17,14 +17,22 @@
 				<div class="chat-name">Верити</div>
 				<div class="chat-status">в сети</div>
 			</div>
+
+			<div class="messages-counter">
+				сообщений осталось: <span id="messagesLeft">3</span>
+			</div>
 		</div>
 
 
 		<div id="messages"></div>
 
 		<div class="chat-input">
-			<input id="messageInput" type="text" placeholder="Напиши сообщение...">
-			<button id="sendButton">Отправить</button>
+			<div id="normalInput">
+				<input id="messageInput" type="text" placeholder="Напиши сообщение...">
+				<button id="sendButton">➤</button>
+			</div>
+
+			<button id="adButton">Получить +3 сообщения</button>
 		</div>
 
 	</div>

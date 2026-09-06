@@ -126,16 +126,21 @@ body {
 /* Нижняя панель */
 
 .chat-input {
-	display: flex;
-	gap: 10px;
-
 	padding: 15px;
-
 	background: #202020;
 }
 
-.chat-input input {
+#normalInput {
+	display: flex;
+	width: 100%;
+	gap: 10px;
+	box-sizing: border-box;
+}
+
+#messageInput {
 	flex: 1;
+	min-width: 0;
+	box-sizing: border-box;
 
 	padding: 12px 15px;
 
@@ -147,8 +152,9 @@ body {
 	color: white;
 }
 
-.chat-input button {
+#sendButton {
 	width: 45px;
+	flex-shrink: 0;
 
 	border: none;
 	border-radius: 12px;
@@ -160,6 +166,30 @@ body {
 	cursor: pointer;
 }
 
-.chat-input button:hover {
-	transform: scale(1.05);
+#adButton {
+	display: none;
+	width: 100%;
+	box-sizing: border-box;
+
+	padding: 12px 15px;
+
+	border: none;
+	border-radius: 12px;
+
+	background: #e8d52f;
+	color: #111;
+
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.messages-counter {
+	margin-left: auto;
+	padding: 6px 10px;
+	border-radius: 8px;
+
+	background: #303030;
+	color: #aaa;
+
+	font-size: 12px;
 }
