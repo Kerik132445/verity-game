@@ -1,6 +1,7 @@
 console.log("SCRIPT JS ЗАГРУЗИЛСЯ");
 
 let messagesLeft = 3
+let isWaitingForReply = false
 
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
@@ -18,14 +19,27 @@ function rewardAd() {
 
 async function sendMessage() {
 
+	if (isWaitingForReply) {
+		return
+	}
+
 	const message = document.getElementById("messageInput").value;
 
 	if (!message.trim()) {
-		return
+		retur
+		n
 	}
 	if (messagesLeft <= 0) {
 		return
 	}
+
+	isWaitingForReply = true
+
+	const input = document.getElementById("messageInput")
+	const sendButton = document.getElementById("sendButton")
+
+	input.disabled = true
+	sendButton.disabled = true
 
 	messagesLeft--
 
@@ -34,7 +48,16 @@ async function sendMessage() {
 		document.getElementById("adButton").style.display = "block";
 	}
 
-	document.getElementById("messagesLeft").textContent = messagesLeft
+	const counter = document.getElementById("messagesLeft")
+
+	counter.textContent = messagesLeft
+
+	counter.classList.remove("counter-change")
+
+	void counter.offsetWidth
+
+	counter.classList.add("counter-change")
+
 
 	document.getElementById("messageInput").value = ""
 
@@ -63,29 +86,59 @@ async function sendMessage() {
 
 	messages.scrollTop = messages.scrollHeight;
 
-	const response = await fetch("http://127.0.0.1:8000/chat", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({
-			msg: message
-		})
-	});
+	try {
+		const response = await fetch("http://127.0.0.1:8000/chat", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				msg: message
+			})
+		});
 
-	const data = await response.json();
+		if (!response.ok) {
+			throw new Error(`HTTP error: ${response.status}`);
+		}
 
-	await sleep(2000)
+		const data = await response.json();
 
-	typingMessage.remove();
+		await sleep(2000);
 
-	const verityMessage = document.createElement("div")
-	verityMessage.classList.add("message", "verity")
+		typingMessage.remove();
 
-	verityMessage.textContent = data.reply
-	messages.appendChild(verityMessage)
+		const verityMessage = document.createElement("div");
+		verityMessage.classList.add("message", "verity");
 
-	messages.scrollTop = messages.scrollHeight;
+		verityMessage.textContent = data.reply;
+		messages.appendChild(verityMessage);
+
+		messages.scrollTop = messages.scrollHeight;
+
+	} catch (error) {
+
+		console.error("Ошибка:", error);
+
+		typingMessage.remove();
+
+		const errorMessage = document.createElement("div");
+		errorMessage.classList.add("message", "verity");
+
+		errorMessage.textContent = "Что-то пошло не так...";
+
+		messages.appendChild(errorMessage);
+
+		messages.scrollTop = messages.scrollHeight;
+
+	} finally {
+
+		isWaitingForReply = false;
+
+		input.disabled = false;
+		sendButton.disabled = false;
+
+		input.focus();
+	}
 
 	console.log(data);
 }

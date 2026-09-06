@@ -409,3 +409,41 @@ body {
 		box-shadow: 0 0 22px rgba(232, 213, 47, 0.35);
 	}
 }
+
+
+/* анимка для кол-ва сообщений */
+
+#messagesLeft.counter-change {
+	animation: counterChange 0.3s ease;
+}
+
+@keyframes counterChange {
+	0% {
+		transform: scale(1);
+		opacity: 1;
+	}
+
+	50% {
+		transform: scale(1.35);
+		opacity: 0.5;
+	}
+
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+#messageInput:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+#sendButton:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+#messagesLeft {
+	display: inline-block;
+}
