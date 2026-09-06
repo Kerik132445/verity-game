@@ -51,10 +51,16 @@ async function sendMessage() {
 
 	const typingMessage = document.createElement("div")
 
-	typingMessage.classList.add("message", "verity")
-	typingMessage.textContent = "Верити печатает..."
+	typingMessage.classList.add("message", "verity", "typing")
+
+	typingMessage.innerHTML = `
+		<span></span>
+		<span></span>
+		<span></span>
+	`
 
 	messages.appendChild(typingMessage);
+
 	messages.scrollTop = messages.scrollHeight;
 
 	const response = await fetch("http://127.0.0.1:8000/chat", {
