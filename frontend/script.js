@@ -5,11 +5,6 @@ let isWaitingForReply = false
 
 let inventory = []
 
-inventory.push("coin")
-inventory.push("key")
-inventory.push("cassette")
-inventory.push("note")
-
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -33,8 +28,7 @@ async function sendMessage() {
 	const message = document.getElementById("messageInput").value;
 
 	if (!message.trim()) {
-		retur
-		n
+		return
 	}
 	if (messagesLeft <= 0) {
 		return
@@ -215,7 +209,7 @@ const items = [
 		id: "note",
 		name: "Старая записка",
 		image: "images/note.webp",
-		description: "Верити почему-то не хочет, чтобы ты её прочитал."
+		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"'
 	},
 ]
 
@@ -224,7 +218,6 @@ function renderInventory() {
 
 	for (let i = 0; i < 15; i++) {
 		const slot = document.createElement("div")
-
 		slot.classList.add("inventory-slot")
 
 		const itemId = inventory[i]
@@ -237,15 +230,77 @@ function renderInventory() {
 
 				image.src = item.image
 				image.alt = item.name
-
 				image.classList.add("inventory-item")
 
 				slot.appendChild(image)
 
-				slot.title = item.name
+				const tooltip = document.createElement("div")
+				tooltip.classList.add("item-tooltip")
+				tooltip.textContent = item.name
+
+				slot.appendChild(tooltip)
+
+				slot.addEventListener("click", () => {
+					document.getElementById("itemName").textContent = item.name
+					document.getElementById("itemDescription").textContent = item.description
+				})
 			}
 		}
 
 		inventoryGrid.append(slot)
 	}
 }
+
+
+function rewardItemAd() {
+	if (inventory.length >= 15) {
+		showItemNotification("Инвентарь заполнен!");
+		return;
+	}
+
+	const randomItem = items[Math.floor(Math.random() * items.length)];
+
+	inventory.push(randomItem.id);
+
+	showItemNotification(`Ты получил: ${randomItem.name}`);
+
+	openInventory();
+
+	setTimeout(() => {
+		highlightItem(inventory.length - 1);
+	}, 100);
+}
+
+function showItemNotification(text) {
+	const notification = document.getElementById("itemNotification");
+	const notificationItem = document.getElementById("notificationItem");
+
+	notificationItem.textContent = text;
+
+	notification.classList.add("show");
+
+	setTimeout(() => {
+		notification.classList.remove("show");
+	}, 2500);
+}
+
+function highlightItem(index) {
+	const slots = document.querySelectorAll(".inventory-slot");
+	const slot = slots[index];
+
+	if (!slot) {
+		return;
+	}
+
+	slot.classList.add("new-item");
+
+	setTimeout(() => {
+		slot.classList.remove("new-item");
+	}, 3000);
+}
+
+document.getElementById("itemAdButton").addEventListener("click", rewardItemAd)
+
+document.getElementById("skinButton").addEventListener("click", () => {
+	alert("Система скинов пока находится в разработке.");
+})

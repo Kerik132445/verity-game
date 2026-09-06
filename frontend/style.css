@@ -452,34 +452,6 @@ body {
 
 
 
-
-
-/* =========================
-   ИНВЕНТАРЬ
-========================= */
-
-#inventoryButton {
-	width: 40px;
-	height: 40px;
-
-	border: none;
-	border-radius: 10px;
-
-	background: #303030;
-	color: white;
-
-	font-size: 20px;
-	cursor: pointer;
-
-	transition: 0.2s;
-}
-
-#inventoryButton:hover {
-	background: #3b3b3b;
-	transform: scale(1.05);
-}
-
-
 /* Затемнение фона */
 
 .inventory-modal {
@@ -607,6 +579,292 @@ body {
 	to {
 		opacity: 1;
 		transform: scale(1);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Информация о предмете */
+
+.item-info {
+	margin-top: 15px;
+	padding: 14px;
+
+	min-height: 60px;
+
+	background: #202020;
+	border: 1px solid #303030;
+	border-radius: 12px;
+
+	opacity: 0;
+	transform: translateY(5px);
+
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease;
+}
+
+.item-info:not(:empty) {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.item-name {
+	color: white;
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.item-description {
+	color: #999;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+
+/* Подсказка с названием */
+
+.inventory-slot {
+	position: relative;
+}
+
+.item-tooltip {
+	position: absolute;
+
+	bottom: calc(100% + 8px);
+	left: 50%;
+
+	transform: translateX(-50%) translateY(5px);
+
+	padding: 7px 10px;
+
+	background: #111;
+	border: 1px solid #3a3a3a;
+	border-radius: 8px;
+
+	color: white;
+	font-size: 12px;
+	white-space: nowrap;
+
+	pointer-events: none;
+
+	opacity: 0;
+
+	transition:
+		opacity 0.15s ease,
+		transform 0.15s ease;
+
+	z-index: 10;
+}
+
+.inventory-slot:hover .item-tooltip {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+
+
+
+
+/* Уведомление о получении предмета */
+
+.item-notification {
+	position: fixed;
+	top: 30px;
+	left: 50%;
+	transform: translateX(-50%) translateY(-20px);
+
+	background: #1b1b1b;
+	border: 1px solid #444;
+	border-radius: 14px;
+	padding: 14px 20px;
+
+	color: white;
+	text-align: center;
+
+	opacity: 0;
+	pointer-events: none;
+
+	transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
+
+	z-index: 1000;
+}
+
+.item-notification.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+.notification-title {
+	font-size: 14px;
+	color: #aaa;
+	margin-bottom: 4px;
+}
+
+#notificationItem {
+	font-size: 17px;
+	font-weight: bold;
+}
+
+
+
+
+/* подсветка предмета */
+
+.inventory-slot.new-item {
+	animation: newItemGlow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes newItemGlow {
+	from {
+		transform: scale(1);
+		box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+	}
+
+	to {
+		transform: scale(1.08);
+		box-shadow: 0 0 18px rgba(255, 255, 255, 0.5);
+	}
+}
+
+/* Кнопка для получения предмета */
+
+#itemAdButton {
+	width: 100%;
+	padding: 12px 16px;
+
+	background: linear-gradient(135deg, #252525, #181818);
+	color: #f5f5f5;
+
+	border: 1px solid #444;
+	border-radius: 10px;
+
+	font-size: 14px;
+	font-weight: 600;
+
+	cursor: pointer;
+
+	transition: all 0.2s ease;
+}
+
+#itemAdButton:hover {
+	border-color: #777;
+	background: linear-gradient(135deg, #303030, #202020);
+	transform: translateY(-2px);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+#itemAdButton:active {
+	transform: translateY(0);
+	box-shadow: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Боковое меню */
+
+.game {
+	min-height: 100vh;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	gap: 15px;
+
+	padding: 20px;
+
+	box-sizing: border-box;
+}
+
+.game-panel {
+	display: flex;
+	flex-direction: column;
+
+	gap: 10px;
+}
+
+.game-button {
+	width: 52px;
+	height: 52px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: #1b1b1b;
+	color: white;
+
+	border: 1px solid #333;
+	border-radius: 12px;
+
+	font-size: 22px;
+
+	cursor: pointer;
+
+	transition:
+		transform 0.2s ease,
+		background 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.game-button:hover {
+	background: #252525;
+
+	border-color: #555;
+
+	transform: translateX(3px);
+
+	box-shadow:
+		0 5px 15px rgba(0, 0, 0, 0.35);
+}
+
+.game-button:active {
+	transform: translateX(3px) scale(0.95);
+}
+
+@media (max-width: 600px) {
+
+	.game {
+		align-items: center;
+
+		gap: 8px;
+
+		padding: 10px;
+	}
+
+	.game-panel {
+		gap: 7px;
+	}
+
+	.game-button {
+		width: 45px;
+		height: 45px;
+
+		font-size: 19px;
 	}
 
 }
