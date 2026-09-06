@@ -1,19 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 	<div class="chat">
+		<div class="chat-header">
+			<div class="avatar">V</div>
+
+			<div class="chat-info">
+				<div class="chat-name">Верити</div>
+				<div class="chat-status">в сети</div>
+			</div>
+		</div>
+
+
 		<div id="messages"></div>
 
-		<input id="messageInput" type="text" placeholder="Напиши сообщение...">
+		<div class="chat-input">
+			<input id="messageInput" type="text" placeholder="Напиши сообщение...">
+			<button id="sendButton">Отправить</button>
+		</div>
 
-		<button id="sendButton">Отправить</button>
 	</div>
 
 
