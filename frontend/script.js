@@ -461,10 +461,12 @@ function renderMessages() {
 
 
 function screenFlicker() {
-	document.body.classList.add("flicker")
+	const phoneScreen = document.querySelector(".phone-screen")
+
+	phoneScreen.classList.add("flicker")
 
 	setTimeout(() => {
-		document.body.classList.remove("flicker")
+		phoneScreen.classList.remove("flicker")
 	}, 80)
 }
 
@@ -481,8 +483,158 @@ randomFlicker()
 
 
 
-document.body.classList.add("glitch")
+function screenGlitch() {
+	const phoneScreen = document.querySelector(".phone-screen")
 
-setTimeout(() => {
-	document.body.classList.remove("glitch")
-}, 250)
+	phoneScreen.classList.remove("glitch")
+
+	void phoneScreen.offsetWidth
+
+	phoneScreen.classList.add("glitch")
+
+	setTimeout(() => {
+		phoneScreen.classList.remove("glitch")
+	}, 350)
+}
+
+
+function randomGlitch() {
+	const delay = Math.random() * 12000 + 7000
+
+	setTimeout(() => {
+		screenGlitch()
+		randomGlitch()
+	}, delay)
+}
+
+randomGlitch()
+
+
+function avatarGlitch() {
+
+	const avatar = document.querySelector(".avatar")
+
+	if (!avatar) {
+		return
+	}
+
+	avatar.classList.remove("avatar-glitch")
+
+	void avatar.offsetWidth
+
+	avatar.classList.add("avatar-glitch")
+
+	setTimeout(() => {
+		avatar.classList.remove("avatar-glitch")
+	}, 250)
+}
+
+
+function randomAvatarGlitch() {
+
+	const delay = Math.random() * 7500 + 800
+
+	setTimeout(() => {
+
+		avatarGlitch()
+
+		randomAvatarGlitch()
+
+	}, delay)
+}
+
+randomAvatarGlitch()
+
+
+function changeVerityStatus() {
+	const status = document.querySelector(".chat-status")
+
+	if (!status) {
+		return
+	}
+
+	status.textContent = "не в сети"
+	status.classList.add("offline")
+
+	setTimeout(() => {
+		status.textContent = "в сети"
+		status.classList.remove("offline")
+	}, Math.random() * 2500 + 1500)
+}
+
+
+function randomStatusChange() {
+	const delay = Math.random() * 20000 + 10000
+
+	setTimeout(() => {
+		changeVerityStatus()
+		randomStatusChange()
+	}, delay)
+}
+
+randomStatusChange()
+
+function verityScreamer() {
+
+	const screamer = document.getElementById("verityScreamer")
+
+	if (!screamer) return
+
+	screamer.classList.remove("active")
+
+	// Перезапускаем CSS-анимацию
+	void screamer.offsetWidth
+
+	screamer.classList.add("active")
+
+	setTimeout(() => {
+		screamer.classList.remove("active")
+	}, 700)
+}
+
+function randomScreamer() {
+
+	const delay =
+		Math.random() * 180000 + 120000
+
+	setTimeout(() => {
+
+		verityScreamer()
+
+		randomScreamer()
+
+	}, delay)
+}
+
+randomScreamer()
+
+
+function changeVerityAvatar() {
+
+	const avatar = document.querySelector(".avatar img")
+
+	if (!avatar) return
+
+	avatar.src = "images/verity-v2.png"
+
+	setTimeout(() => {
+		avatar.src = "images/verity.png"
+	}, 20000)
+}
+
+
+function randomAvatarChange() {
+
+	// От 60 до 180 секунд
+	const delay = Math.random() * 120000 + 60000
+
+	setTimeout(() => {
+
+		changeVerityAvatar()
+
+		randomAvatarChange()
+
+	}, delay)
+}
+
+randomAvatarChange()
