@@ -868,3 +868,320 @@ body {
 	}
 
 }
+
+
+
+
+
+
+/* редкость предметов */
+
+.item-rarity {
+	font-size: 13px;
+	font-weight: 600;
+	margin-top: 4px;
+	margin-bottom: 8px;
+}
+
+.item-rarity.common {
+	color: #aaa;
+}
+
+.item-rarity.uncommon {
+	color: #55cc77;
+}
+
+.item-rarity.rare {
+	color: #5599ff;
+}
+
+.item-rarity.epic {
+	color: #e539ff;
+}
+
+.item-rarity.mythic {
+	color: #DC143C;
+}
+
+.item-rarity.legendary {
+	color: #FFD700;
+}
+
+
+/* для количества предметов */
+
+.item-amount {
+	position: absolute;
+	right: 5px;
+	bottom: 3px;
+
+	min-width: 20px;
+	height: 20px;
+
+	padding: 0 5px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	border-radius: 10px;
+
+	color: white;
+
+	font-size: 12px;
+	font-weight: bold;
+}
+
+
+/* Для визуала */
+
+body {
+	background:
+		radial-gradient(circle at center,
+			#171717 0%,
+			#0b0b0b 55%,
+			#030303 100%);
+
+	min-height: 100vh;
+	overflow: hidden;
+}
+
+.screen-effects {
+	position: fixed;
+	inset: 0;
+
+	pointer-events: none;
+	z-index: 9999;
+
+	background:
+		repeating-linear-gradient(to bottom,
+			rgba(255, 255, 255, 0.015) 0px,
+			rgba(255, 255, 255, 0.015) 1px,
+			transparent 1px,
+			transparent 4px);
+
+	mix-blend-mode: overlay;
+}
+
+
+.flicker {
+	animation: screenFlicker 0.08s linear;
+}
+
+@keyframes screenFlicker {
+	0% {
+		filter: brightness(1);
+	}
+
+	30% {
+		filter: brightness(1.8);
+	}
+
+	60% {
+		filter: brightness(0.4);
+	}
+
+	100% {
+		filter: brightness(1);
+	}
+}
+
+.glitch {
+	animation: glitch 0.25s steps(2);
+}
+
+@keyframes glitch {
+	0% {
+		transform: translate(0);
+	}
+
+	20% {
+		transform: translate(-3px, 1px);
+	}
+
+	40% {
+		transform: translate(3px, -1px);
+	}
+
+	60% {
+		transform: translate(-1px, 2px);
+	}
+
+	80% {
+		transform: translate(2px, 0);
+	}
+
+	100% {
+		transform: translate(0);
+	}
+}
+
+
+
+.message.verity {
+	animation: messageAppear 0.25s ease;
+}
+
+@keyframes messageAppear {
+	from {
+		opacity: 0;
+		transform: translateY(5px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.message.corrupted {
+	animation: corruptedMessage 0.4s steps(3);
+}
+
+
+/* корпус теелфона */
+
+.phone {
+	width: 430px;
+	height: 850px;
+
+	padding: 12px;
+
+	background: #111;
+
+	border-radius: 45px;
+
+	box-shadow:
+		0 0 0 2px #333,
+		0 25px 70px rgba(0, 0, 0, 0.8);
+
+	position: relative;
+
+	margin: auto;
+}
+
+.phone-screen {
+	width: 100%;
+	height: 100%;
+
+	background: #050505;
+
+	border-radius: 35px;
+
+	overflow: hidden;
+
+	position: relative;
+}
+
+.phone .chat {
+	width: 100%;
+	height: 100%;
+
+	border-radius: 35px;
+}
+
+.phone-camera {
+	position: absolute;
+
+	top: 12px;
+	left: 50%;
+
+	transform: translateX(-50%);
+
+	width: 90px;
+	height: 25px;
+
+	background: #000;
+
+	border-radius: 20px;
+
+	z-index: 100;
+}
+
+.screen-cracks {
+	position: absolute;
+	inset: 0;
+
+	pointer-events: none;
+
+	z-index: 999;
+}
+
+.screen-cracks svg {
+	width: 100%;
+	height: 100%;
+}
+
+.screen-cracks path {
+	fill: none;
+
+	stroke: rgba(255, 255, 255, 0.25);
+
+	stroke-width: 1.5;
+
+	filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15));
+}
+
+.screen-cracks path {
+	animation: crackFlicker 7s infinite;
+}
+
+@keyframes crackFlicker {
+
+	0%,
+	90%,
+	100% {
+		opacity: 0.5;
+	}
+
+	92% {
+		opacity: 1;
+	}
+
+	94% {
+		opacity: 0.2;
+	}
+
+	96% {
+		opacity: 0.8;
+	}
+}
+
+.phone-screen::after {
+	content: "";
+
+	position: absolute;
+
+	inset: 0;
+
+	pointer-events: none;
+
+	border-radius: 35px;
+
+	box-shadow:
+		inset 0 0 30px rgba(255, 255, 255, 0.03),
+		inset 0 0 80px rgba(0, 0, 0, 0.5);
+
+	z-index: 998;
+}
+
+@keyframes screenGlitch {
+
+	0%,
+	95%,
+	100% {
+		filter: none;
+	}
+
+	96% {
+		filter: brightness(1.5);
+	}
+
+	97% {
+		filter: brightness(0.5);
+	}
+
+	98% {
+		filter: brightness(1.2);
+	}
+}

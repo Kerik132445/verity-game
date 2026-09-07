@@ -3,7 +3,7 @@ console.log("SCRIPT JS ЗАГРУЗИЛСЯ");
 let messagesLeft = 3
 let isWaitingForReply = false
 
-let inventory = []
+let inventory = {}
 let messages = []
 
 loadGame()
@@ -261,23 +261,44 @@ const items = [
 	},
 
 	{
+		id: "glass",
+		name: "Осколок зеркала",
+		image: "images/glass.png",
+		description: "Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
+		rarity: "epic",
+		chance: 8
+	},
+
+	{
+		id: "eye",
+		name: "Чёрный глаз",
+		image: "images/eye.png",
+		description: "Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
+		rarity: "mythic",
+		chance: 4
+	},
+
+
+	{
 		id: "note",
 		name: "Старая записка",
 		image: "images/note.webp",
 		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
 		rarity: "legendary",
-		chance: 5
+		chance: 2
 	},
 ]
 
 function renderInventory() {
 	inventoryGrid.innerHTML = ""
 
+	const inventoryItems = Object.keys(inventory)
+
 	for (let i = 0; i < 15; i++) {
 		const slot = document.createElement("div")
 		slot.classList.add("inventory-slot")
 
-		const itemId = inventory[i]
+		const itemId = inventoryItems[i]
 
 		if (itemId) {
 			const item = items.find(item => item.id === itemId)
@@ -291,6 +312,12 @@ function renderInventory() {
 
 				slot.appendChild(image)
 
+				const amount = document.createElement("div")
+				amount.classList.add("item-amount")
+				amount.textContent = inventory[itemId] > 1 ? inventory[itemId] : ""
+
+				slot.appendChild(amount)
+
 				const tooltip = document.createElement("div")
 				tooltip.classList.add("item-tooltip")
 				tooltip.textContent = item.name
@@ -299,6 +326,21 @@ function renderInventory() {
 
 				slot.addEventListener("click", () => {
 					document.getElementById("itemName").textContent = item.name
+
+					const rarityElement = document.getElementById("itemRarity")
+
+					const rarityNames = {
+						common: "Обычная",
+						uncommon: "Необычная",
+						rare: "Редкая",
+						epic: "Эпическая",
+						mythic: "Мифическая",
+						legendary: "Легендарная"
+					}
+
+					rarityElement.textContent = rarityNames[item.rarity]
+					rarityElement.className = `item-rarity ${item.rarity}`
+
 					document.getElementById("itemDescription").textContent = item.description
 				})
 			}
@@ -310,14 +352,16 @@ function renderInventory() {
 
 
 function rewardItemAd() {
-	if (inventory.length >= 15) {
+	const usedSlots = Object.keys(inventory).length
+
+	if (usedSlots >= 15 && !inventory[getRandomItem().id]) {
 		showItemNotification("Инвентарь заполнен!")
 		return
 	}
 
 	const randomItem = getRandomItem()
 
-	inventory.push(randomItem.id)
+	inventory[randomItem.id] = (inventory[randomItem.id] || 0) + 1
 
 	saveGame()
 
@@ -414,3 +458,31 @@ function renderMessages() {
 
 	messagesContainer.scrollTop = messagesContainer.scrollHeight
 }
+
+
+function screenFlicker() {
+	document.body.classList.add("flicker")
+
+	setTimeout(() => {
+		document.body.classList.remove("flicker")
+	}, 80)
+}
+
+function randomFlicker() {
+	const delay = Math.random() * 10000 + 5000
+
+	setTimeout(() => {
+		screenFlicker()
+		randomFlicker()
+	}, delay)
+}
+
+randomFlicker()
+
+
+
+document.body.classList.add("glitch")
+
+setTimeout(() => {
+	document.body.classList.remove("glitch")
+}, 250)
