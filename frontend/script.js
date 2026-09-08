@@ -1,640 +1,262 @@
-console.log("SCRIPT JS ЗАГРУЗИЛСЯ");
+console.log("VERITY GAME: ДИАЛОГИ ЗАГРУЖЕНЫ");
 
-let messagesLeft = 3
-let isWaitingForReply = false
+const SAVE_KEY = "verityGameV2";
 
-let inventory = {}
-let messages = []
+let state = { node:"start", anger:0, lives:3, messages:[], inventory:{} };
 
-loadGame()
+loadGame();
+renderGame();
+updateStats();
+setupInventory();
 
-
-function saveGame() {
-	const gameData = {
-		inventory: inventory,
-		messagesLeft: messagesLeft,
-		messages: messages
-	}
-
-	localStorage.setItem("verityGame", JSON.stringify(gameData))
+function saveGame(){localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
+function loadGame(){
+    const saved=localStorage.getItem(SAVE_KEY);
+    if(!saved)return;
+    try{state={...state,...JSON.parse(saved)};}catch{localStorage.removeItem(SAVE_KEY);}
 }
 
-function loadGame() {
-	const savedGame = localStorage.getItem("verityGame")
+function renderGame(){renderMessages();renderChoices();}
 
-	if (!savedGame) {
-		return []
-	}
-
-	const gameData = JSON.parse(savedGame)
-
-	messagesLeft = gameData.messagesLeft ?? 3
-	inventory = gameData.inventory ?? []
-	messages = gameData.messages ?? []
+function renderMessages(){
+    const container=document.getElementById("messages");
+    container.innerHTML="";
+    for(const message of state.messages){
+        const element=document.createElement("div");
+        element.classList.add("message",message.sender==="user"?"user":"verity");
+        element.textContent=message.text;
+        container.appendChild(element);
+    }
+    container.scrollTop=container.scrollHeight;
 }
 
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
+function renderChoices(){
+    const container=document.getElementById("choices");
+    const node=dialogueTree[state.node];
+    container.innerHTML="";
+    container.classList.remove("disabled");
+    if(!node?.choices?.length)return;
+
+    node.choices.forEach((choice,index)=>{
+        const button=document.createElement("button");
+        button.className="choice-button";
+        button.textContent=choice.text;
+        button.addEventListener("click",()=>choose(choice));
+        container.appendChild(button);
+        setTimeout(()=>button.classList.add("show"),index*80);
+    });
 }
 
-function rewardAd() {
-	messagesLeft += 3
+async function choose(choice){
+    const container=document.getElementById("choices");
+    if(container.classList.contains("disabled"))return;
 
-	document.getElementById("messagesLeft").textContent = messagesLeft;
+    container.classList.add("disabled");
+    addMessage("user",choice.text);
+    await sleep(250);
+    addMessage("verity",choice.reply);
 
-	renderMessages()
+    state.anger+=choice.anger;
 
-	saveGame()
+    if(state.anger>=10){
+        triggerScreamer();
+        state.lives--;
+        state.anger=0;
 
-	document.getElementById("normalInput").style.display = "flex";
-	document.getElementById("adButton").style.display = "none";
+        if(state.lives<=0){
+            state.node="gameOver";
+            saveGame();
+            updateStats();
+            renderGame();
+            return;
+        }
+    }
+
+    if(state.anger<=-5){
+        state.node="levelComplete";
+        saveGame();
+        updateStats();
+        renderGame();
+        return;
+    }
+
+    state.node=choice.next;
+    saveGame();
+    updateStats();
+    renderGame();
 }
 
-
-async function sendMessage() {
-
-	if (isWaitingForReply) {
-		return
-	}
-
-	const message = document.getElementById("messageInput").value;
-
-	if (!message.trim()) {
-		return
-	}
-	if (messagesLeft <= 0) {
-		return
-	}
-
-	isWaitingForReply = true
-
-	const input = document.getElementById("messageInput")
-	const sendButton = document.getElementById("sendButton")
-
-	input.disabled = true
-	sendButton.disabled = true
-
-	messagesLeft--
-
-	saveGame()
-
-	if (messagesLeft <= 0) {
-		document.getElementById("normalInput").style.display = "none";
-		document.getElementById("adButton").style.display = "block";
-	}
-
-	const counter = document.getElementById("messagesLeft")
-
-	counter.textContent = messagesLeft
-
-	counter.classList.remove("counter-change")
-
-	void counter.offsetWidth
-
-	counter.classList.add("counter-change")
-
-
-	document.getElementById("messageInput").value = ""
-
-	const messagesContainer = document.getElementById("messages")
-
-	const newMessage = document.createElement("div")
-	newMessage.classList.add("message", "user")
-
-	newMessage.textContent = message
-	messagesContainer.appendChild(newMessage)
-
-	messages.push({
-		sender: "user",
-		text: message
-	})
-
-	saveGame()
-
-	messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-
-	const typingMessage = document.createElement("div")
-
-	typingMessage.classList.add("message", "verity", "typing")
-
-	typingMessage.innerHTML = `
-		<span></span>
-		<span></span>
-		<span></span>
-	`
-
-	messagesContainer.appendChild(typingMessage);
-
-	messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-	try {
-		const response = await fetch("http://127.0.0.1:8000/chat", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				msg: message
-			})
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error: ${response.status}`);
-		}
-
-		const data = await response.json();
-
-		await sleep(2000);
-
-		typingMessage.remove();
-
-		const verityMessage = document.createElement("div");
-
-		verityMessage.classList.add("message", "verity");
-
-		verityMessage.textContent = data.reply;
-		messagesContainer.appendChild(verityMessage);
-
-		messages.push({
-			sender: "verity",
-			text: data.reply
-		})
-
-		saveGame()
-
-		messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-	} catch (error) {
-
-		console.error("Ошибка:", error);
-
-		typingMessage.remove();
-
-		const errorMessage = document.createElement("div");
-		errorMessage.classList.add("message", "verity");
-
-		errorMessage.textContent = "Что-то пошло не так...";
-
-		messagesContainer.appendChild(errorMessage);
-
-		messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-	} finally {
-
-		isWaitingForReply = false;
-
-		input.disabled = false;
-		sendButton.disabled = false;
-
-		input.focus();
-	}
+function addMessage(sender,text){
+    state.messages.push({sender,text});
+    renderMessages();
+    saveGame();
 }
 
-document.getElementById("sendButton").addEventListener("click", sendMessage)
-
-document.getElementById("messageInput").addEventListener("keydown", (event) => {
-	if (event.key == "Enter") {
-		sendMessage()
-	}
-})
-
-document.getElementById("adButton").addEventListener("click", rewardAd)
-
-
-
-
-
-const inventoryButton = document.getElementById("inventoryButton")
-const inventoryModal = document.getElementById("inventoryModal")
-const closeInventory = document.getElementById("closeInventory")
-const inventoryGrid = document.getElementById("inventoryGrid")
-
-function openInventory() {
-	inventoryModal.style.display = "flex"
-	renderInventory()
+function updateStats(){
+    const anger=document.getElementById("anger");
+    const lives=document.getElementById("lives");
+    if(anger)anger.textContent=state.anger<0?\`Любовь: \${Math.abs(state.anger)}/5\`:\`Злость: \${state.anger}/10\`;
+    if(lives)lives.textContent="❤".repeat(Math.max(0,state.lives));
 }
 
-function closeInventoryWindow() {
-	inventoryModal.style.display = "none"
+function triggerScreamer(){
+    const screamer=document.getElementById("verityScreamer");
+    if(!screamer)return;
+    screamer.classList.remove("active");
+    void screamer.offsetWidth;
+    screamer.classList.add("active");
+    setTimeout(()=>screamer.classList.remove("active"),700);
 }
 
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 
-inventoryButton.addEventListener("click", openInventory)
+function resetGame(){localStorage.removeItem(SAVE_KEY);location.reload();}
+document.getElementById("resetGame")?.addEventListener("click",resetGame);
 
-closeInventory.addEventListener("click", closeInventoryWindow)
+/* Инвентарь */
 
-inventoryModal.addEventListener("click", (event) => {
-	if (event.target == inventoryModal) {
-		closeInventoryWindow()
-	}
-})
+const items=[
+    {id:"coin",name:"Старая монета",image:"images/old_coin.png",description:"Странная старая монета.",rarity:"common",chance:50},
+    {id:"key",name:"Маленький ключ",image:"images/key.webp",description:"Неизвестно, что он открывает.",rarity:"uncommon",chance:30},
+    {id:"cassette",name:"Кассета",image:"images/cassette.png",description:"Верити почему-то не хочет, чтобы ты её включал.",rarity:"rare",chance:15},
+    {id:"glass",name:"Осколок зеркала",image:"images/glass.png",description:"Осколок старого зеркала.",rarity:"epic",chance:8},
+    {id:"eye",name:"Чёрный глаз",image:"images/eye.png",description:"Небольшой стеклянный шарик, похожий на глаз.",rarity:"mythic",chance:4},
+    {id:"note",name:"Старая записка",image:"images/note.webp",description:"Странная старая записка.",rarity:"legendary",chance:2}
+];
 
+function setupInventory(){
+    const button=document.getElementById("inventoryButton");
+    const modal=document.getElementById("inventoryModal");
+    const close=document.getElementById("closeInventory");
 
-
-const items = [
-	{
-		id: "coin",
-		name: "Старая монета",
-		image: "images/old_coin.png",
-		description: "Странная старая монета.",
-		rarity: "common",
-		chance: 50
-	},
-
-	{
-		id: "key",
-		name: "Маленький ключ",
-		image: "images/key.webp",
-		description: "Неизвестно, что он открывает.",
-		rarity: "uncommon",
-		chance: 30
-	},
-
-	{
-		id: "cassette",
-		name: "Кассета",
-		image: "images/cassette.png",
-		description: "Верити почему-то не хочет, чтобы ты её включал.",
-		rarity: "rare",
-		chance: 15
-	},
-
-	{
-		id: "glass",
-		name: "Осколок зеркала",
-		image: "images/glass.png",
-		description: "Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
-		rarity: "epic",
-		chance: 8
-	},
-
-	{
-		id: "eye",
-		name: "Чёрный глаз",
-		image: "images/eye.png",
-		description: "Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
-		rarity: "mythic",
-		chance: 4
-	},
-
-
-	{
-		id: "note",
-		name: "Старая записка",
-		image: "images/note.webp",
-		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
-		rarity: "legendary",
-		chance: 2
-	},
-]
-
-function renderInventory() {
-	inventoryGrid.innerHTML = ""
-
-	const inventoryItems = Object.keys(inventory)
-
-	for (let i = 0; i < 15; i++) {
-		const slot = document.createElement("div")
-		slot.classList.add("inventory-slot")
-
-		const itemId = inventoryItems[i]
-
-		if (itemId) {
-			const item = items.find(item => item.id === itemId)
-
-			if (item) {
-				const image = document.createElement("img")
-
-				image.src = item.image
-				image.alt = item.name
-				image.classList.add("inventory-item")
-
-				slot.appendChild(image)
-
-				const amount = document.createElement("div")
-				amount.classList.add("item-amount")
-				amount.textContent = inventory[itemId] > 1 ? inventory[itemId] : ""
-
-				slot.appendChild(amount)
-
-				const tooltip = document.createElement("div")
-				tooltip.classList.add("item-tooltip")
-				tooltip.textContent = item.name
-
-				slot.appendChild(tooltip)
-
-				slot.addEventListener("click", () => {
-					document.getElementById("itemName").textContent = item.name
-
-					const rarityElement = document.getElementById("itemRarity")
-
-					const rarityNames = {
-						common: "Обычная",
-						uncommon: "Необычная",
-						rare: "Редкая",
-						epic: "Эпическая",
-						mythic: "Мифическая",
-						legendary: "Легендарная"
-					}
-
-					rarityElement.textContent = rarityNames[item.rarity]
-					rarityElement.className = `item-rarity ${item.rarity}`
-
-					document.getElementById("itemDescription").textContent = item.description
-				})
-			}
-		}
-
-		inventoryGrid.append(slot)
-	}
+    button?.addEventListener("click",()=>{modal.style.display="flex";renderInventory();});
+    close?.addEventListener("click",()=>modal.style.display="none");
+    modal?.addEventListener("click",e=>{if(e.target===modal)modal.style.display="none";});
+    document.getElementById("itemAdButton")?.addEventListener("click",rewardItem);
+    document.getElementById("skinButton")?.addEventListener("click",()=>alert("Система скинов пока находится в разработке."));
 }
 
+function renderInventory(){
+    const grid=document.getElementById("inventoryGrid");
+    if(!grid)return;
+    grid.innerHTML="";
+    const ids=Object.keys(state.inventory);
 
-function rewardItemAd() {
-	const usedSlots = Object.keys(inventory).length
+    ids.slice(0,15).forEach(id=>{
+        const item=items.find(item=>item.id===id);
+        if(!item)return;
+        const slot=document.createElement("div");
+        slot.className="inventory-slot";
 
-	if (usedSlots >= 15 && !inventory[getRandomItem().id]) {
-		showItemNotification("Инвентарь заполнен!")
-		return
-	}
+        const image=document.createElement("img");
+        image.src=item.image;
+        image.alt=item.name;
+        image.className="inventory-item";
+        slot.appendChild(image);
 
-	const randomItem = getRandomItem()
+        if(state.inventory[id]>1){
+            const amount=document.createElement("div");
+            amount.className="item-amount";
+            amount.textContent=state.inventory[id];
+            slot.appendChild(amount);
+        }
 
-	inventory[randomItem.id] = (inventory[randomItem.id] || 0) + 1
+        slot.addEventListener("click",()=>{
+            document.getElementById("itemName").textContent=item.name;
+            document.getElementById("itemDescription").textContent=item.description;
+            document.getElementById("itemRarity").textContent=item.rarity;
+        });
+        grid.appendChild(slot);
+    });
 
-	saveGame()
-
-	showItemNotification(`Ты получил: ${randomItem.name}`)
-
-	openInventory()
-
-	setTimeout(() => {
-		highlightItem(inventory.length - 1)
-	}, 100)
-
-	messagesLeft += 1
-
-	document.getElementById("messagesLeft").textContent = messagesLeft
-
-	saveGame()
-
-	document.getElementById("normalInput").style.display = "flex"
-	document.getElementById("adButton").style.display = "none"
+    for(let i=ids.length;i<15;i++)grid.appendChild(document.createElement("div")).className="inventory-slot";
 }
 
-function showItemNotification(text) {
-	const notification = document.getElementById("itemNotification");
-	const notificationItem = document.getElementById("notificationItem");
+function rewardItem(){
+    const ids=Object.keys(state.inventory);
+    const item=getRandomItem();
 
-	notificationItem.textContent = text;
+    if(ids.length>=15&&!state.inventory[item.id]){
+        showItemNotification("Инвентарь заполнен!");
+        return;
+    }
 
-	notification.classList.add("show");
-
-	setTimeout(() => {
-		notification.classList.remove("show");
-	}, 2500);
+    state.inventory[item.id]=(state.inventory[item.id]||0)+1;
+    saveGame();
+    showItemNotification(\`Ты получил: \${item.name}\`);
+    renderInventory();
 }
 
-function highlightItem(index) {
-	const slots = document.querySelectorAll(".inventory-slot");
-	const slot = slots[index];
-
-	if (!slot) {
-		return;
-	}
-
-	slot.classList.add("new-item");
-
-	setTimeout(() => {
-		slot.classList.remove("new-item");
-	}, 3000);
+function getRandomItem(){
+    const random=Math.random()*100;
+    let chance=0;
+    for(const item of items){
+        chance+=item.chance;
+        if(random<chance)return item;
+    }
+    return items[0];
 }
 
-document.getElementById("itemAdButton").addEventListener("click", rewardItemAd)
-
-document.getElementById("skinButton").addEventListener("click", () => {
-	alert("Система скинов пока находится в разработке.");
-})
-
-
-document.getElementById("messagesLeft").textContent = messagesLeft
-
-renderMessages()
-
-function getRandomItem() {
-	const random = Math.random() * 100
-
-	let currentChance = 0
-
-	for (const item of items) {
-		currentChance += item.chance
-
-		if (random < currentChance) {
-			return item
-		}
-	}
-
-	return items[0]
+function showItemNotification(text){
+    const notification=document.getElementById("itemNotification");
+    const textElement=document.getElementById("notificationItem");
+    if(!notification||!textElement)return;
+    textElement.textContent=text;
+    notification.classList.add("show");
+    setTimeout(()=>notification.classList.remove("show"),2500);
 }
 
-function renderMessages() {
-	const messagesContainer = document.getElementById("messages")
+/* Визуальные эффекты */
 
-	messagesContainer.innerHTML = ""
-
-	for (const message of messages) {
-		const messageElement = document.createElement("div")
-
-		messageElement.classList.add(
-			"message",
-			message.sender === "user" ? "user" : "verity"
-		)
-
-		messageElement.textContent = message.text
-
-		messagesContainer.appendChild(messageElement)
-	}
-
-	messagesContainer.scrollTop = messagesContainer.scrollHeight
+function screenFlicker(){
+    const screen=document.querySelector(".phone-screen");
+    if(!screen)return;
+    screen.classList.add("flicker");
+    setTimeout(()=>screen.classList.remove("flicker"),80);
 }
+function randomFlicker(){setTimeout(()=>{screenFlicker();randomFlicker();},Math.random()*10000+5000);}
+randomFlicker();
 
-
-function screenFlicker() {
-	const phoneScreen = document.querySelector(".phone-screen")
-
-	phoneScreen.classList.add("flicker")
-
-	setTimeout(() => {
-		phoneScreen.classList.remove("flicker")
-	}, 80)
+function screenGlitch(){
+    const screen=document.querySelector(".phone-screen");
+    if(!screen)return;
+    screen.classList.remove("glitch");
+    void screen.offsetWidth;
+    screen.classList.add("glitch");
+    setTimeout(()=>screen.classList.remove("glitch"),350);
 }
+function randomGlitch(){setTimeout(()=>{screenGlitch();randomGlitch();},Math.random()*12000+7000);}
+randomGlitch();
 
-function randomFlicker() {
-	const delay = Math.random() * 10000 + 5000
-
-	setTimeout(() => {
-		screenFlicker()
-		randomFlicker()
-	}, delay)
+function avatarGlitch(){
+    const avatar=document.querySelector(".avatar");
+    if(!avatar)return;
+    avatar.classList.remove("avatar-glitch");
+    void avatar.offsetWidth;
+    avatar.classList.add("avatar-glitch");
+    setTimeout(()=>avatar.classList.remove("avatar-glitch"),250);
 }
+function randomAvatarGlitch(){setTimeout(()=>{avatarGlitch();randomAvatarGlitch();},Math.random()*7500+800);}
+randomAvatarGlitch();
 
-randomFlicker()
-
-
-
-function screenGlitch() {
-	const phoneScreen = document.querySelector(".phone-screen")
-
-	phoneScreen.classList.remove("glitch")
-
-	void phoneScreen.offsetWidth
-
-	phoneScreen.classList.add("glitch")
-
-	setTimeout(() => {
-		phoneScreen.classList.remove("glitch")
-	}, 350)
+function changeVerityStatus(){
+    const status=document.querySelector(".chat-status");
+    if(!status)return;
+    status.textContent="не в сети";
+    status.classList.add("offline");
+    setTimeout(()=>{
+        status.textContent="в сети";
+        status.classList.remove("offline");
+    },Math.random()*2500+1500);
 }
+function randomStatusChange(){setTimeout(()=>{changeVerityStatus();randomStatusChange();},Math.random()*20000+10000);}
+randomStatusChange();
 
-
-function randomGlitch() {
-	const delay = Math.random() * 12000 + 7000
-
-	setTimeout(() => {
-		screenGlitch()
-		randomGlitch()
-	}, delay)
+function changeVerityAvatar(){
+    const avatar=document.querySelector(".avatar img");
+    if(!avatar)return;
+    avatar.src="images/verity-v2.png";
+    setTimeout(()=>avatar.src="images/verity.png",20000);
 }
-
-randomGlitch()
-
-
-function avatarGlitch() {
-
-	const avatar = document.querySelector(".avatar")
-
-	if (!avatar) {
-		return
-	}
-
-	avatar.classList.remove("avatar-glitch")
-
-	void avatar.offsetWidth
-
-	avatar.classList.add("avatar-glitch")
-
-	setTimeout(() => {
-		avatar.classList.remove("avatar-glitch")
-	}, 250)
-}
-
-
-function randomAvatarGlitch() {
-
-	const delay = Math.random() * 7500 + 800
-
-	setTimeout(() => {
-
-		avatarGlitch()
-
-		randomAvatarGlitch()
-
-	}, delay)
-}
-
-randomAvatarGlitch()
-
-
-function changeVerityStatus() {
-	const status = document.querySelector(".chat-status")
-
-	if (!status) {
-		return
-	}
-
-	status.textContent = "не в сети"
-	status.classList.add("offline")
-
-	setTimeout(() => {
-		status.textContent = "в сети"
-		status.classList.remove("offline")
-	}, Math.random() * 2500 + 1500)
-}
-
-
-function randomStatusChange() {
-	const delay = Math.random() * 20000 + 10000
-
-	setTimeout(() => {
-		changeVerityStatus()
-		randomStatusChange()
-	}, delay)
-}
-
-randomStatusChange()
-
-function verityScreamer() {
-
-	const screamer = document.getElementById("verityScreamer")
-
-	if (!screamer) return
-
-	screamer.classList.remove("active")
-
-	// Перезапускаем CSS-анимацию
-	void screamer.offsetWidth
-
-	screamer.classList.add("active")
-
-	setTimeout(() => {
-		screamer.classList.remove("active")
-	}, 700)
-}
-
-function randomScreamer() {
-
-	const delay =
-		Math.random() * 180000 + 120000
-
-	setTimeout(() => {
-
-		verityScreamer()
-
-		randomScreamer()
-
-	}, delay)
-}
-
-randomScreamer()
-
-
-function changeVerityAvatar() {
-
-	const avatar = document.querySelector(".avatar img")
-
-	if (!avatar) return
-
-	avatar.src = "images/verity-v2.png"
-
-	setTimeout(() => {
-		avatar.src = "images/verity.png"
-	}, 20000)
-}
-
-
-function randomAvatarChange() {
-
-	// От 60 до 180 секунд
-	const delay = Math.random() * 120000 + 60000
-
-	setTimeout(() => {
-
-		changeVerityAvatar()
-
-		randomAvatarChange()
-
-	}, delay)
-}
-
-randomAvatarChange()
+function randomAvatarChange(){setTimeout(()=>{changeVerityAvatar();randomAvatarChange();},Math.random()*120000+60000);}
+randomAvatarChange();
