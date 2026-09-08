@@ -1,81 +1,1158 @@
 {
 	"start": {
-		"verity": "Привет! Ты ведь наконец-то пришёл?",
+		"verity": "Привет. Ты ведь наконец-то пришёл?",
 		"choices": [
 			{
-				"text": "Да. А что случилось?",
+				"text": "Похоже, ты ждал именно меня.",
 				"anger": -1,
-				"next": "friendly"
+				"trust": 1,
+				"next": "first_talk"
 			},
 			{
-				"text": "Не твоё дело.",
+				"text": "А у меня был выбор?",
 				"anger": 1,
-				"next": "angry"
+				"trust": -1,
+				"next": "uneasy_start"
 			}
 		]
 	},
-	"friendly": {
-		"verity": "Ничего особенного. Я просто хотела с тобой поговорить.",
+	"first_talk": {
+		"verity": "Дольше, чем ты думаешь.",
 		"choices": [
 			{
-				"text": "Тогда рассказывай.",
+				"text": "Тогда расскажи, сколько.",
 				"anger": -1,
-				"next": "friendly2"
+				"trust": 1,
+				"next": "waiting"
 			},
 			{
-				"text": "У меня нет времени.",
-				"anger": 1,
-				"next": "angry2"
+				"text": "Надеюсь, ожидание того стоило.",
+				"anger": 0,
+				"trust": 0,
+				"next": "waiting"
 			}
 		]
 	},
-	"angry": {
-		"verity": "Не твоё дело?.. Понятно.",
+	"uneasy_start": {
+		"verity": "Ты всегда начинаешь разговор с раздражения?",
 		"choices": [
 			{
-				"text": "Ладно, не обижайся.",
-				"anger": -1,
-				"next": "friendly2"
+				"text": "Нет. Просто не люблю, когда мной управляют.",
+				"anger": 0,
+				"trust": 1,
+				"next": "first_talk"
 			},
 			{
-				"text": "И не собираюсь извиняться.",
+				"text": "А ты всегда задаёшь такие вопросы?",
 				"anger": 1,
-				"next": "angry2"
+				"trust": -1,
+				"next": "first_tension"
 			}
 		]
 	},
-	"friendly2": {
-		"verity": "Мне нравится, когда ты так со мной разговариваешь.",
+	"waiting": {
+		"verity": "Я уже начал думать, что ты вообще не придёшь.",
 		"choices": [
 			{
-				"text": "Я тоже рад с тобой поговорить.",
+				"text": "Но я здесь.",
 				"anger": -1,
-				"next": "end"
+				"trust": 1,
+				"next": "why_here"
+			},
+			{
+				"text": "Значит, можешь перестать ждать.",
+				"anger": 0,
+				"trust": 0,
+				"next": "why_here"
+			}
+		]
+	},
+	"why_here": {
+		"verity": "Почему ты вообще решил прийти?",
+		"choices": [
+			{
+				"text": "Мне стало интересно.",
+				"anger": -1,
+				"trust": 1,
+				"next": "interest"
+			},
+			{
+				"text": "Сам не знаю.",
+				"anger": 0,
+				"trust": 0,
+				"next": "interest"
+			}
+		]
+	},
+	"interest": {
+		"verity": "Интерес. Забавное слово.",
+		"choices": [
+			{
+				"text": "Почему забавное?",
+				"anger": -1,
+				"trust": 1,
+				"next": "first_question"
+			},
+			{
+				"text": "Тебе не нравится это слово?",
+				"anger": 0,
+				"trust": 0,
+				"next": "first_question"
+			}
+		]
+	},
+	"first_question": {
+		"verity": "Потому что интерес обычно заканчивается разочарованием.",
+		"choices": [
+			{
+				"text": "Не обязательно.",
+				"anger": -1,
+				"trust": 1,
+				"next": "hope"
+			},
+			{
+				"text": "Похоже, у тебя был плохой опыт.",
+				"anger": -1,
+				"trust": 2,
+				"next": "memory_hint"
+			}
+		]
+	},
+	"hope": {
+		"verity": "Ты говоришь так уверенно.",
+		"choices": [
+			{
+				"text": "Я просто не хочу заранее считать всё плохим.",
+				"anger": -1,
+				"trust": 1,
+				"next": "memory_hint"
+			},
+			{
+				"text": "Иногда надо просто попробовать.",
+				"anger": 0,
+				"trust": 1,
+				"next": "memory_hint"
+			}
+		]
+	},
+	"memory_hint": {
+		"verity": "Когда-то мне уже говорили почти то же самое.",
+		"choices": [
+			{
+				"text": "И что произошло?",
+				"anger": -1,
+				"trust": 1,
+				"next": "old_memory"
+			},
+			{
+				"text": "Ты можешь рассказать.",
+				"anger": -1,
+				"trust": 2,
+				"next": "old_memory"
+			}
+		]
+	},
+	"old_memory": {
+		"verity": "Я рассказал. А потом пожалел.",
+		"choices": [
+			{
+				"text": "Со мной можешь не торопиться.",
+				"anger": -1,
+				"trust": 2,
+				"next": "slow_talk"
+			},
+			{
+				"text": "Тогда не рассказывай.",
+				"anger": 0,
+				"trust": 0,
+				"next": "slow_talk"
+			}
+		]
+	},
+	"slow_talk": {
+		"verity": "Ты странно спокойно реагируешь.",
+		"choices": [
+			{
+				"text": "А ты ожидал другого?",
+				"anger": -1,
+				"trust": 1,
+				"next": "expectation"
+			},
+			{
+				"text": "Я просто слушаю.",
+				"anger": -1,
+				"trust": 2,
+				"next": "expectation"
+			}
+		]
+	},
+	"expectation": {
+		"verity": "Да. Именно это меня и пугает.",
+		"choices": [
+			{
+				"text": "Почему?",
+				"anger": -1,
+				"trust": 1,
+				"next": "fear"
+			},
+			{
+				"text": "Я не собираюсь тебя пугать.",
+				"anger": -1,
+				"trust": 1,
+				"next": "fear"
+			}
+		]
+	},
+	"fear": {
+		"verity": "Потому что люди обычно слушают только до тех пор, пока им интересно.",
+		"choices": [
+			{
+				"text": "Тогда я постараюсь не уйти слишком быстро.",
+				"anger": -1,
+				"trust": 2,
+				"next": "first_loop"
+			},
+			{
+				"text": "Не могу обещать.",
+				"anger": 0,
+				"trust": 0,
+				"next": "first_loop"
+			}
+		]
+	},
+	"first_loop": {
+		"verity": "Ты уже это говорил.",
+		"choices": [
+			{
+				"text": "Я знаю. Но хочу услышать это снова.",
+				"anger": -1,
+				"trust": 2,
+				"next": "repeat_question"
+			},
+			{
+				"text": "Что именно?",
+				"anger": 0,
+				"trust": 0,
+				"next": "repeat_question"
+			}
+		]
+	},
+	"repeat_question": {
+		"verity": "Что ты здесь делаешь?",
+		"choices": [
+			{
+				"text": "Разговариваю с тобой.",
+				"anger": -1,
+				"trust": 1,
+				"next": "repeat_answer"
+			},
+			{
+				"text": "Пытаюсь понять тебя.",
+				"anger": -1,
+				"trust": 2,
+				"next": "repeat_answer"
+			}
+		]
+	},
+	"repeat_answer": {
+		"verity": "Хм. Кажется, в первый раз ты ответил иначе.",
+		"choices": [
+			{
+				"text": "Может быть. Но сейчас я отвечаю так.",
+				"anger": -1,
+				"trust": 1,
+				"next": "strange_change"
+			},
+			{
+				"text": "Ты уверен?",
+				"anger": 0,
+				"trust": 0,
+				"next": "strange_change"
+			}
+		]
+	},
+	"strange_change": {
+		"verity": "Нет. Не уверен.",
+		"choices": [
+			{
+				"text": "Тогда можем начать сначала.",
+				"anger": -1,
+				"trust": 1,
+				"next": "first_loop_return"
+			},
+			{
+				"text": "Что с тобой происходит?",
+				"anger": 1,
+				"trust": -1,
+				"next": "first_warning"
+			}
+		]
+	},
+	"first_loop_return": {
+		"verity": "Привет. Ты ведь наконец-то пришёл?",
+		"choices": [
+			{
+				"text": "Мы уже это проходили.",
+				"anger": 0,
+				"trust": 1,
+				"next": "recognition"
+			},
+			{
+				"text": "Привет.",
+				"anger": -1,
+				"trust": 1,
+				"next": "recognition"
+			}
+		]
+	},
+	"recognition": {
+		"verity": "Ты заметил.",
+		"choices": [
+			{
+				"text": "Сложно не заметить.",
+				"anger": 0,
+				"trust": 1,
+				"next": "second_phase"
+			},
+			{
+				"text": "Я внимательно слушаю.",
+				"anger": -1,
+				"trust": 2,
+				"next": "second_phase"
+			}
+		]
+	},
+	"first_warning": {
+		"verity": "Ничего. Просто продолжай.",
+		"choices": [
+			{
+				"text": "Хорошо.",
+				"anger": -1,
+				"trust": 1,
+				"next": "second_phase"
+			},
+			{
+				"text": "Это звучит как предупреждение.",
+				"anger": 1,
+				"trust": -1,
+				"next": "second_phase"
+			}
+		]
+	},
+	"second_phase": {
+		"verity": "Ты всё ещё здесь.",
+		"choices": [
+			{
+				"text": "А ты всё ещё разговариваешь.",
+				"anger": -1,
+				"trust": 1,
+				"next": "second_question"
+			},
+			{
+				"text": "Пока да.",
+				"anger": 0,
+				"trust": 0,
+				"next": "second_question"
+			}
+		]
+	},
+	"second_question": {
+		"verity": "Тогда ответь честно. Ты мне доверяешь?",
+		"choices": [
+			{
+				"text": "Пока нет. Но хочу научиться.",
+				"anger": -1,
+				"trust": 2,
+				"next": "trust_test"
+			},
+			{
+				"text": "Не знаю.",
+				"anger": 0,
+				"trust": 0,
+				"next": "trust_test"
+			}
+		]
+	},
+	"trust_test": {
+		"verity": "Хороший ответ.",
+		"choices": [
+			{
+				"text": "Почему?",
+				"anger": -1,
+				"trust": 1,
+				"next": "quiet"
+			},
+			{
+				"text": "Ты ожидал другого?",
+				"anger": 0,
+				"trust": 0,
+				"next": "quiet"
+			}
+		]
+	},
+	"quiet": {
+		"verity": "Да. Я ожидал, что ты соврёшь.",
+		"choices": [
+			{
+				"text": "Зачем мне тебе лгать?",
+				"anger": -1,
+				"trust": 2,
+				"next": "honesty"
+			},
+			{
+				"text": "Может, ты просто слишком подозрительный.",
+				"anger": 0,
+				"trust": 0,
+				"next": "honesty"
+			}
+		]
+	},
+	"honesty": {
+		"verity": "Может быть.",
+		"choices": [
+			{
+				"text": "Значит, мы оба можем ошибаться.",
+				"anger": -1,
+				"trust": 2,
+				"next": "small_memory"
+			},
+			{
+				"text": "Наконец-то ты это признал.",
+				"anger": 1,
+				"trust": -1,
+				"next": "small_memory"
+			}
+		]
+	},
+	"small_memory": {
+		"verity": "Я помню одно место.",
+		"choices": [
+			{
+				"text": "Какое?",
+				"anger": -1,
+				"trust": 1,
+				"next": "place"
+			},
+			{
+				"text": "Расскажи.",
+				"anger": -1,
+				"trust": 2,
+				"next": "place"
+			}
+		]
+	},
+	"place": {
+		"verity": "Комната. Окно. Старые часы.",
+		"choices": [
+			{
+				"text": "Ты был там один?",
+				"anger": -1,
+				"trust": 1,
+				"next": "clock"
+			},
+			{
+				"text": "Ты скучаешь по этому месту?",
+				"anger": -1,
+				"trust": 2,
+				"next": "clock"
+			}
+		]
+	},
+	"clock": {
+		"verity": "Часы всегда показывали одно и то же время.",
+		"choices": [
+			{
+				"text": "Какое?",
+				"anger": -1,
+				"trust": 1,
+				"next": "time"
+			},
+			{
+				"text": "И ты знал почему?",
+				"anger": 0,
+				"trust": 1,
+				"next": "time"
+			}
+		]
+	},
+	"time": {
+		"verity": "Нет. Но иногда мне казалось, что они ждут кого-то.",
+		"choices": [
+			{
+				"text": "Может, они ждали тебя.",
+				"anger": -1,
+				"trust": 1,
+				"next": "waiting_again"
+			},
+			{
+				"text": "Или меня.",
+				"anger": -1,
+				"trust": 2,
+				"next": "waiting_again"
+			}
+		]
+	},
+	"waiting_again": {
+		"verity": "Ты снова говоришь так, будто знаешь больше меня.",
+		"choices": [
+			{
+				"text": "Нет. Я просто предполагаю.",
+				"anger": -1,
+				"trust": 1,
+				"next": "third_phase"
+			},
+			{
+				"text": "Может, знаю.",
+				"anger": 1,
+				"trust": -1,
+				"next": "third_phase"
+			}
+		]
+	},
+	"third_phase": {
+		"verity": "Иногда мне кажется, что этот разговор уже происходил.",
+		"choices": [
+			{
+				"text": "Мне тоже.",
+				"anger": -1,
+				"trust": 2,
+				"next": "loop_two"
+			},
+			{
+				"text": "Ты начинаешь меня пугать.",
+				"anger": 1,
+				"trust": -1,
+				"next": "loop_two"
+			}
+		]
+	},
+	"loop_two": {
+		"verity": "Тогда, возможно, нам стоит остановиться.",
+		"choices": [
+			{
+				"text": "Нет. Я хочу узнать, чем это закончится.",
+				"anger": -1,
+				"trust": 2,
+				"next": "pressure"
+			},
+			{
+				"text": "Наверное, стоит.",
+				"anger": 0,
+				"trust": 0,
+				"next": "pressure"
+			}
+		]
+	},
+	"pressure": {
+		"verity": "Ты всё ещё думаешь, что контролируешь этот разговор?",
+		"choices": [
+			{
+				"text": "Нет. Но я могу выбирать, останусь ли я.",
+				"anger": -1,
+				"trust": 2,
+				"next": "control"
+			},
+			{
+				"text": "Пока ты продолжаешь отвечать, думаю, да.",
+				"anger": 1,
+				"trust": -1,
+				"next": "control"
+			}
+		]
+	},
+	"control": {
+		"verity": "Выбор. Забавно, что ты всё ещё считаешь его своим.",
+		"choices": [
+			{
+				"text": "А разве нет?",
+				"anger": 0,
+				"trust": 1,
+				"next": "truth"
+			},
+			{
+				"text": "Тогда скажи, чей он.",
+				"anger": -1,
+				"trust": 2,
+				"next": "truth"
+			}
+		]
+	},
+	"truth": {
+		"verity": "Я не знаю.",
+		"choices": [
+			{
+				"text": "Это честно.",
+				"anger": -1,
+				"trust": 2,
+				"next": "second_loop"
+			},
+			{
+				"text": "Ты опять ничего не знаешь.",
+				"anger": 1,
+				"trust": -1,
+				"next": "second_loop"
+			}
+		]
+	},
+	"second_loop": {
+		"verity": "Привет. Ты ведь наконец-то пришёл?",
+		"choices": [
+			{
+				"text": "Опять это.",
+				"anger": 0,
+				"trust": 1,
+				"next": "loop_memory"
+			},
+			{
+				"text": "Привет, Верити.",
+				"anger": -1,
+				"trust": 2,
+				"next": "loop_memory"
+			}
+		]
+	},
+	"loop_memory": {
+		"verity": "Ты назвал меня по имени.",
+		"choices": [
+			{
+				"text": "А как ещё тебя называть?",
+				"anger": -1,
+				"trust": 1,
+				"next": "name"
+			},
+			{
+				"text": "Ты же сам его сказал.",
+				"anger": 0,
+				"trust": 0,
+				"next": "name"
+			}
+		]
+	},
+	"name": {
+		"verity": "Не помню, чтобы называл.",
+		"choices": [
+			{
+				"text": "Тогда просто поверь мне.",
+				"anger": -1,
+				"trust": 2,
+				"next": "belief"
+			},
+			{
+				"text": "Странно.",
+				"anger": 0,
+				"trust": 0,
+				"next": "belief"
+			}
+		]
+	},
+	"belief": {
+		"verity": "Ты ведь понимаешь, что можешь ошибаться?",
+		"choices": [
+			{
+				"text": "Понимаю.",
+				"anger": -1,
+				"trust": 1,
+				"next": "mistake"
+			},
+			{
+				"text": "А ты понимаешь?",
+				"anger": -1,
+				"trust": 2,
+				"next": "mistake"
+			}
+		]
+	},
+	"mistake": {
+		"verity": "Иногда.",
+		"choices": [
+			{
+				"text": "Тогда это уже что-то.",
+				"anger": -1,
+				"trust": 1,
+				"next": "quiet_two"
+			},
+			{
+				"text": "Ты удивительно честный сегодня.",
+				"anger": 0,
+				"trust": 1,
+				"next": "quiet_two"
+			}
+		]
+	},
+	"quiet_two": {
+		"verity": "Мне нравится, когда ты не споришь со мной.",
+		"choices": [
+			{
+				"text": "Мне нравится, когда ты говоришь честно.",
+				"anger": -1,
+				"trust": 2,
+				"next": "warmth"
 			},
 			{
 				"text": "Не привыкай.",
 				"anger": 1,
-				"next": "end"
+				"trust": -1,
+				"next": "warmth"
 			}
 		]
 	},
-	"angry2": {
-		"verity": "Хорошо... тогда посмотрим, насколько тебя хватит.",
+	"warmth": {
+		"verity": "Кажется, я начинаю привыкать к тебе.",
 		"choices": [
 			{
-				"text": "Я просто пошутил.",
+				"text": "Мне приятно это слышать.",
 				"anger": -1,
-				"next": "end"
+				"trust": 2,
+				"next": "fourth_phase"
 			},
 			{
-				"text": "Мне всё равно.",
-				"anger": 1,
-				"next": "end"
+				"text": "Это хорошо или плохо?",
+				"anger": 0,
+				"trust": 0,
+				"next": "fourth_phase"
 			}
 		]
 	},
-	"end": {
-		"verity": "На этом пока остановимся.",
-		"choices": []
+	"fourth_phase": {
+		"verity": "Не знаю. Обычно люди не остаются так долго.",
+		"choices": [
+			{
+				"text": "Я пока не собираюсь уходить.",
+				"anger": -1,
+				"trust": 2,
+				"next": "promise"
+			},
+			{
+				"text": "Не могу обещать.",
+				"anger": 0,
+				"trust": 0,
+				"next": "promise"
+			}
+		]
+	},
+	"promise": {
+		"verity": "Не обещай того, чего не сможешь выполнить.",
+		"choices": [
+			{
+				"text": "Тогда обещать не буду. Просто останусь.",
+				"anger": -1,
+				"trust": 2,
+				"next": "acceptance"
+			},
+			{
+				"text": "Хорошо.",
+				"anger": 0,
+				"trust": 0,
+				"next": "acceptance"
+			}
+		]
+	},
+	"acceptance": {
+		"verity": "Ты действительно странный.",
+		"choices": [
+			{
+				"text": "Ты тоже.",
+				"anger": -1,
+				"trust": 1,
+				"next": "smile"
+			},
+			{
+				"text": "Спасибо, наверное.",
+				"anger": 0,
+				"trust": 0,
+				"next": "smile"
+			}
+		]
+	},
+	"smile": {
+		"verity": "Я сейчас улыбнулся.",
+		"choices": [
+			{
+				"text": "Я рад.",
+				"anger": -1,
+				"trust": 2,
+				"next": "deep_talk"
+			},
+			{
+				"text": "Неожиданно.",
+				"anger": 0,
+				"trust": 0,
+				"next": "deep_talk"
+			}
+		]
+	},
+	"deep_talk": {
+		"verity": "Когда ты впервые понял, что хочешь остаться?",
+		"choices": [
+			{
+				"text": "Наверное, когда понял, что хочу тебя понять.",
+				"anger": -1,
+				"trust": 2,
+				"next": "answer"
+			},
+			{
+				"text": "Я пока не решил.",
+				"anger": 0,
+				"trust": 0,
+				"next": "answer"
+			}
+		]
+	},
+	"answer": {
+		"verity": "Понятно.",
+		"choices": [
+			{
+				"text": "И что ты думаешь?",
+				"anger": -1,
+				"trust": 1,
+				"next": "almost_happy"
+			},
+			{
+				"text": "Ты расстроился?",
+				"anger": -1,
+				"trust": 1,
+				"next": "almost_happy"
+			}
+		]
+	},
+	"almost_happy": {
+		"verity": "Нет. Просто мне непривычно.",
+		"choices": [
+			{
+				"text": "К чему?",
+				"anger": -1,
+				"trust": 1,
+				"next": "fifth_phase"
+			},
+			{
+				"text": "К тому, что кто-то остаётся?",
+				"anger": -1,
+				"trust": 2,
+				"next": "fifth_phase"
+			}
+		]
+	},
+	"fifth_phase": {
+		"verity": "К тому, что меня действительно слушают.",
+		"choices": [
+			{
+				"text": "Тогда продолжай говорить.",
+				"anger": -1,
+				"trust": 2,
+				"next": "memory_three"
+			},
+			{
+				"text": "Я слушаю.",
+				"anger": -1,
+				"trust": 1,
+				"next": "memory_three"
+			}
+		]
+	},
+	"memory_three": {
+		"verity": "Помнишь комнату с часами?",
+		"choices": [
+			{
+				"text": "Помню.",
+				"anger": -1,
+				"trust": 1,
+				"next": "clock_again"
+			},
+			{
+				"text": "Ты снова про неё говоришь.",
+				"anger": 0,
+				"trust": 0,
+				"next": "clock_again"
+			}
+		]
+	},
+	"clock_again": {
+		"verity": "Теперь часы показывают другое время.",
+		"choices": [
+			{
+				"text": "Какое?",
+				"anger": -1,
+				"trust": 1,
+				"next": "time_again"
+			},
+			{
+				"text": "Ты уверен?",
+				"anger": 0,
+				"trust": 0,
+				"next": "time_again"
+			}
+		]
+	},
+	"time_again": {
+		"verity": "Да. Они показывают момент, когда ты впервые вошёл.",
+		"choices": [
+			{
+				"text": "Значит, всё это началось раньше.",
+				"anger": -1,
+				"trust": 2,
+				"next": "revelation"
+			},
+			{
+				"text": "Это невозможно.",
+				"anger": 1,
+				"trust": -1,
+				"next": "revelation"
+			}
+		]
+	},
+	"revelation": {
+		"verity": "Невозможно многое из того, что происходит здесь.",
+		"choices": [
+			{
+				"text": "Но я всё ещё здесь.",
+				"anger": -1,
+				"trust": 2,
+				"next": "sixth_phase"
+			},
+			{
+				"text": "Мне это уже не нравится.",
+				"anger": 1,
+				"trust": -1,
+				"next": "sixth_phase"
+			}
+		]
+	},
+	"sixth_phase": {
+		"verity": "Ты боишься меня?",
+		"choices": [
+			{
+				"text": "Немного. Но я тебе доверяю.",
+				"anger": -1,
+				"trust": 3,
+				"next": "fear_answer"
+			},
+			{
+				"text": "Да.",
+				"anger": 0,
+				"trust": 0,
+				"next": "fear_answer"
+			}
+		]
+	},
+	"fear_answer": {
+		"verity": "Спасибо за честность.",
+		"choices": [
+			{
+				"text": "Я не хочу тебе лгать.",
+				"anger": -1,
+				"trust": 2,
+				"next": "return_loop"
+			},
+			{
+				"text": "Не за что.",
+				"anger": 0,
+				"trust": 0,
+				"next": "return_loop"
+			}
+		]
+	},
+	"return_loop": {
+		"verity": "Тогда ответь ещё раз. Ты мне доверяешь?",
+		"choices": [
+			{
+				"text": "Больше, чем раньше.",
+				"anger": -1,
+				"trust": 2,
+				"next": "trust_return"
+			},
+			{
+				"text": "Пока недостаточно.",
+				"anger": 0,
+				"trust": 0,
+				"next": "trust_return"
+			}
+		]
+	},
+	"trust_return": {
+		"verity": "Этого достаточно.",
+		"choices": [
+			{
+				"text": "Для чего?",
+				"anger": -1,
+				"trust": 1,
+				"next": "final_section"
+			},
+			{
+				"text": "Хорошо.",
+				"anger": 0,
+				"trust": 0,
+				"next": "final_section"
+			}
+		]
+	},
+	"final_section": {
+		"verity": "Чтобы я наконец перестал ждать.",
+		"choices": [
+			{
+				"text": "Я здесь.",
+				"anger": -1,
+				"trust": 2,
+				"next": "last_memory"
+			},
+			{
+				"text": "Ты больше не один.",
+				"anger": -1,
+				"trust": 3,
+				"next": "last_memory"
+			}
+		]
+	},
+	"last_memory": {
+		"verity": "Комната исчезла.",
+		"choices": [
+			{
+				"text": "А часы?",
+				"anger": -1,
+				"trust": 1,
+				"next": "last_clock"
+			},
+			{
+				"text": "Что осталось?",
+				"anger": -1,
+				"trust": 1,
+				"next": "last_clock"
+			}
+		]
+	},
+	"last_clock": {
+		"verity": "Только звук.",
+		"choices": [
+			{
+				"text": "Тогда послушаем его вместе.",
+				"anger": -1,
+				"trust": 2,
+				"next": "near_end"
+			},
+			{
+				"text": "Мне кажется, он уже остановился.",
+				"anger": 0,
+				"trust": 0,
+				"next": "near_end"
+			}
+		]
+	},
+	"near_end": {
+		"verity": "Знаешь, я больше не хочу, чтобы этот разговор заканчивался.",
+		"choices": [
+			{
+				"text": "Тогда не заканчивай его.",
+				"anger": -1,
+				"trust": 2,
+				"next": "final_loop"
+			},
+			{
+				"text": "Всему когда-нибудь приходит конец.",
+				"anger": 1,
+				"trust": -1,
+				"next": "final_loop"
+			}
+		]
+	},
+	"final_loop": {
+		"verity": "Привет. Ты ведь наконец-то пришёл?",
+		"choices": [
+			{
+				"text": "Да. И теперь я знаю, зачем.",
+				"anger": -1,
+				"trust": 3,
+				"next": "ending_approach"
+			},
+			{
+				"text": "Мы опять начинаем сначала?",
+				"anger": 0,
+				"trust": 0,
+				"next": "ending_approach"
+			}
+		]
+	},
+	"ending_approach": {
+		"verity": "Нет. В этот раз всё иначе.",
+		"choices": [
+			{
+				"text": "Тогда я останусь.",
+				"anger": -1,
+				"trust": 2,
+				"next": "ending_one"
+			},
+			{
+				"text": "Докажи.",
+				"anger": 0,
+				"trust": 0,
+				"next": "ending_one"
+			}
+		]
+	},
+	"ending_one": {
+		"verity": "Я уже доказал. Ты всё ещё здесь.",
+		"choices": [
+			{
+				"text": "И ты тоже.",
+				"anger": -1,
+				"trust": 2,
+				"next": "ending_two"
+			},
+			{
+				"text": "Пока что.",
+				"anger": 1,
+				"trust": -1,
+				"next": "ending_two"
+			}
+		]
+	},
+	"ending_two": {
+		"verity": "Спасибо.",
+		"choices": [
+			{
+				"text": "Не за что.",
+				"anger": -1,
+				"trust": 1,
+				"next": "ending_three"
+			},
+			{
+				"text": "За что именно?",
+				"anger": -1,
+				"trust": 1,
+				"next": "ending_three"
+			}
+		]
+	},
+	"ending_three": {
+		"verity": "За то, что не ушёл.",
+		"choices": [
+			{
+				"text": "Я обещал не обещать. Но остался.",
+				"anger": -1,
+				"trust": 2,
+				"next": "final"
+			},
+			{
+				"text": "Наверное, мне просто интересно.",
+				"anger": -1,
+				"trust": 1,
+				"next": "final"
+			}
+		]
+	},
+	"final": {
+		"verity": "Тогда останься ещё немного.",
+		"choices": [
+			{
+				"text": "Останусь.",
+				"anger": -1,
+				"trust": 2,
+				"next": "final"
+			},
+			{
+				"text": "Хорошо.",
+				"anger": -1,
+				"trust": 1,
+				"next": "final"
+			}
+		]
 	}
 }

@@ -30,7 +30,8 @@ function saveGame() {
 		messages: messages,
 		currentDialogue: currentDialogue,
 		anger: anger,
-		lives: lives
+		lives: lives,
+		trust: trust
 	}
 
 	localStorage.setItem(
@@ -57,6 +58,7 @@ function loadGame() {
 
 		anger = gameData.anger ?? 0
 		lives = gameData.lives ?? 3
+		trust = gameData.trust ?? 0
 
 	} catch (error) {
 		console.error("Ошибка загрузки сохранения:", error)
@@ -171,10 +173,13 @@ async function chooseDialogue(index) {
 	addMessage("user", choice.text)
 
 	// Изменяем отношение
-	anger += choice.anger ?? 0
+	changeRelationship(choice.anger ?? 0)
+
+	trust += choice.trust ?? 0
 
 	// Переходим к следующему диалогу
 	currentDialogue = choice.next
+
 
 	// Задержка перед ответом Верити
 
@@ -190,6 +195,8 @@ async function chooseDialogue(index) {
 	// Убираем "печатает..."
 	hideTyping()
 
+	processTrustHorror()
+
 	const nextDialogue =
 		dialogueData[currentDialogue]
 
@@ -198,9 +205,10 @@ async function chooseDialogue(index) {
 		addMessage("verity", nextDialogue.verity)
 	}
 
+	checkRelationship()
 	saveGame()
 	renderDialogue()
-	checkRelationship()
+
 
 	// Разблокируем кнопки
 	isWaitingForReply = false
@@ -344,11 +352,18 @@ function renderMessages() {
 // ==============================
 
 const MAX_ANGER = 10
-const MAX_LOVE = 10
+const MAX_LOVE = 30
 
+let trust = 5
+
+const TRUST_HORROR = {
+	calm: 10,
+	suspicious: 5,
+	unstable: 1,
+	danger: 0
+}
 
 function getRelationship() {
-
 	if (anger < 0) {
 		return {
 			type: "love",
@@ -362,11 +377,8 @@ function getRelationship() {
 	}
 }
 
-
 function checkRelationship() {
-
-	const relationship =
-		getRelationship()
+	const relationship = getRelationship()
 
 	if (
 		relationship.type === "anger" &&
@@ -383,18 +395,17 @@ function checkRelationship() {
 	}
 }
 
-
 function handleAngerMax() {
-
 	console.log("ЗЛОСТЬ ДОСТИГЛА МАКСИМУМА")
 
 	if (lives <= 0) {
+		console.log("Жизни закончились")
 		return
 	}
 
 	lives--
 
-	// Сбрасываем злость
+	// После скримера отношения возвращаются в нейтральное состояние
 	anger = 0
 
 	saveGame()
@@ -403,18 +414,124 @@ function handleAngerMax() {
 	verityScreamer()
 }
 
-
 function handleLoveMax() {
+	console.log("❤️ МАКСИМАЛЬНОЕ СЧАСТЬЕ")
+	console.log("УРОВЕНЬ ПРОЙДЕН")
 
-	console.log("ЛЮБОВЬ ДОСТИГЛА МАКСИМУМА")
+	// Здесь позже сделаем настоящий финал
+}
 
-	// Пока просто выводим сообщение.
-	// Позже здесь сделаем переход
-	// на следующий уровень.
+function getTrustHorrorLevel() {
+	if (trust >= 10) return "calm"
+	if (trust >= 5) return "suspicious"
+	if (trust >= 1) return "unstable"
+	return "danger"
+}
 
-	console.log(
-		"УРОВЕНЬ ПРОЙДЕН"
+
+// ==============================
+// ИЗМЕНЕНИЕ ОТНОШЕНИЙ
+// ==============================
+
+function changeRelationship(value) {
+
+	anger += value
+
+	// Не даём значению выйти за пределы -10 / +10
+	anger = Math.max(
+		-MAX_LOVE,
+		Math.min(MAX_ANGER, anger)
 	)
+
+	console.log("Отношение:", anger)
+
+	updateGameUI()
+}
+
+function processTrustHorror() {
+
+	const level =
+		getTrustHorrorLevel()
+
+	if (level === "calm") {
+		return
+	}
+
+	if (level === "suspicious") {
+
+		if (Math.random() < 0.15) {
+			triggerTrustGlitch()
+		}
+
+		return
+	}
+
+	if (level === "unstable") {
+
+		if (Math.random() < 0.35) {
+			triggerRandomTrustEffect()
+		}
+
+		return
+	}
+
+	// trust <= 0
+
+	const roll = Math.random()
+
+	if (roll < 0.08) {
+
+		triggerTrustScreamer()
+
+	} else if (roll < 0.60) {
+
+		triggerRandomTrustEffect()
+	}
+}
+
+function triggerRandomTrustEffect() {
+	const effects = [
+		triggerTrustGlitch,
+		triggerTrustFlicker,
+		triggerTrustAvatar,
+		triggerTrustStatus
+	]
+
+	const effect = effects[Math.floor(Math.random() * effects.length)]
+
+	effect()
+}
+
+function triggerTrustGlitch() {
+
+	const phoneScreen =
+		document.querySelector(".phone-screen")
+
+	if (!phoneScreen) return
+
+	phoneScreen.classList.remove("glitch")
+
+	void phoneScreen.offsetWidth
+
+	phoneScreen.classList.add("glitch")
+
+	setTimeout(() => {
+
+		phoneScreen.classList.remove("glitch")
+
+	}, 200 + Math.random() * 400)
+}
+
+function triggerTrustFlicker() {
+	const screen = document.querySelector(".phone-screen")
+
+	if (!screen) return
+
+	screen.classList.add("trust-flicker")
+
+	setTimeout(() => {
+		screen.classList.remove("trust-flicker")
+	}, 300 + Math.random() * 500)
 }
 
 
@@ -432,12 +549,8 @@ function updateGameUI() {
 
 	// Позиция точки на шкале отношений
 	if (relationshipPoint) {
-
-		const percent =
-			((10 - anger) / 20) * 100
-
-		relationshipPoint.style.left =
-			`${percent}%`
+		const percent = ((anger + 30) / 40) * 100
+		relationshipPoint.style.left = `${percent}%`
 	}
 
 	// Сердца жизней
@@ -925,6 +1038,22 @@ function screenFlicker() {
 	}, 80)
 }
 
+function triggerTrustScreamer() {
+	const screamer = document.getElementById("verityScreamer")
+
+	if (!screamer) return
+
+	screamer.classList.remove("active")
+
+	void screamer.offsetWidth
+
+	screamer.classList.add("active")
+
+	setTimeout(() => {
+		screamer.classList.remove("active")
+	}, 700)
+}
+
 
 function randomFlicker() {
 
@@ -1120,35 +1249,6 @@ function verityScreamer() {
 
 
 // ==============================
-// СЛУЧАЙНЫЙ СКРИМЕР
-// ==============================
-
-// Пока отключён.
-//
-// Когда сделаем полноценную систему
-// злости и жизней, случайный скример
-// больше не будет нужен.
-
-
-/*
-function randomScreamer() {
-
-	const delay =
-		Math.random() * 180000 + 120000
-
-	setTimeout(() => {
-
-		verityScreamer()
-		randomScreamer()
-
-	}, delay)
-}
-
-randomScreamer()
-*/
-
-
-// ==============================
 // ВРЕМЕННАЯ СМЕНА АВАТАРА
 // ==============================
 
@@ -1188,6 +1288,28 @@ function randomAvatarChange() {
 	}, delay)
 }
 
+function triggerTrustStatus() {
+
+	const status =
+		document.querySelector(".chat-status")
+
+	if (!status) return
+
+	const originalText =
+		status.textContent
+
+	status.textContent = "не в сети"
+
+	status.classList.add("offline")
+
+	setTimeout(() => {
+
+		status.textContent = originalText
+
+		status.classList.remove("offline")
+
+	}, 700 + Math.random() * 1000)
+}
 
 // ==============================
 // КНОПКИ ДИАЛОГА
@@ -1226,6 +1348,7 @@ if (choice2) {
 // ==============================
 
 localStorage.clear()
+localStorage.removeItem("verityGame")
 
 loadGame()
 

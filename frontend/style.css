@@ -2004,3 +2004,64 @@ body {
 .game-panel {
 	margin-top: 75px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.glitch-active {
+	animation: trustGlitch 0.15s steps(2, end) 2;
+}
+
+@keyframes trustGlitch {
+	0% {
+		transform: translate(0);
+		filter: none;
+	}
+
+	25% {
+		transform: translate(-3px, 2px);
+		filter: contrast(1.4);
+	}
+
+	50% {
+		transform: translate(3px, -2px);
+		filter: brightness(1.5);
+	}
+
+	75% {
+		transform: translate(-2px, 1px);
+		filter: contrast(1.8);
+	}
+
+	100% {
+		transform: translate(0);
+		filter: none;
+	}
+}
+
+.trust-flicker {
+	animation: trustFlicker 0.12s steps(2, end) 3;
+}
+
+@keyframes trustFlicker {
+
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.55;
+	}
+}
