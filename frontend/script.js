@@ -1,262 +1,1122 @@
-console.log("VERITY GAME: ДИАЛОГИ ЗАГРУЖЕНЫ");
+console.log("VERITY GAME ЗАПУЩЕН")
 
-const SAVE_KEY = "verityGameV2";
+// ==============================
+// СОСТОЯНИЕ ИГРЫ
+// ==============================
 
-let state = { node:"start", anger:0, lives:3, messages:[], inventory:{} };
+let inventory = {}
+let messages = []
 
-loadGame();
-renderGame();
-updateStats();
-setupInventory();
+let currentDialogue = "start"
 
-function saveGame(){localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
-function loadGame(){
-    const saved=localStorage.getItem(SAVE_KEY);
-    if(!saved)return;
-    try{state={...state,...JSON.parse(saved)};}catch{localStorage.removeItem(SAVE_KEY);}
+let anger = 0
+let lives = 3
+
+let dialogueData = {}
+
+
+// ==============================
+// СОХРАНЕНИЕ
+// ==============================
+
+function saveGame() {
+	const gameData = {
+		inventory: inventory,
+		messages: messages,
+		currentDialogue: currentDialogue,
+		anger: anger,
+		lives: lives
+	}
+
+	localStorage.setItem(
+		"verityGame",
+		JSON.stringify(gameData)
+	)
 }
 
-function renderGame(){renderMessages();renderChoices();}
 
-function renderMessages(){
-    const container=document.getElementById("messages");
-    container.innerHTML="";
-    for(const message of state.messages){
-        const element=document.createElement("div");
-        element.classList.add("message",message.sender==="user"?"user":"verity");
-        element.textContent=message.text;
-        container.appendChild(element);
-    }
-    container.scrollTop=container.scrollHeight;
+function loadGame() {
+	const savedGame = localStorage.getItem("verityGame")
+
+	if (!savedGame) {
+		return
+	}
+
+	try {
+		const gameData = JSON.parse(savedGame)
+
+		inventory = gameData.inventory ?? {}
+		messages = gameData.messages ?? []
+
+		currentDialogue = gameData.currentDialogue ?? "start"
+
+		anger = gameData.anger ?? 0
+		lives = gameData.lives ?? 3
+
+	} catch (error) {
+		console.error("Ошибка загрузки сохранения:", error)
+	}
 }
 
-function renderChoices(){
-    const container=document.getElementById("choices");
-    const node=dialogueTree[state.node];
-    container.innerHTML="";
-    container.classList.remove("disabled");
-    if(!node?.choices?.length)return;
 
-    node.choices.forEach((choice,index)=>{
-        const button=document.createElement("button");
-        button.className="choice-button";
-        button.textContent=choice.text;
-        button.addEventListener("click",()=>choose(choice));
-        container.appendChild(button);
-        setTimeout(()=>button.classList.add("show"),index*80);
-    });
+// ==============================
+// ДИАЛОГ
+// ==============================
+
+async function loadDialogue() {
+	try {
+		const response = await fetch("data/dialogue.json")
+
+		if (!response.ok) {
+			throw new Error("Не удалось загрузить dialogue.json")
+		}
+
+		dialogueData = await response.json()
+
+		if (
+			messages.length === 0 &&
+			dialogueData[currentDialogue]?.verity
+		) {
+			addMessage(
+				"verity",
+				dialogueData[currentDialogue].verity
+			)
+		}
+
+		renderDialogue()
+
+	} catch (error) {
+		console.error("Ошибка загрузки диалога:", error)
+	}
 }
 
-async function choose(choice){
-    const container=document.getElementById("choices");
-    if(container.classList.contains("disabled"))return;
 
-    container.classList.add("disabled");
-    addMessage("user",choice.text);
-    await sleep(250);
-    addMessage("verity",choice.reply);
+function renderDialogue() {
+	const dialogue = dialogueData[currentDialogue]
 
-    state.anger+=choice.anger;
+	if (!dialogue) {
+		console.error(
+			"Диалог не найден:",
+			currentDialogue
+		)
+		return
+	}
 
-    if(state.anger>=10){
-        triggerScreamer();
-        state.lives--;
-        state.anger=0;
+	const choice1 = document.getElementById("choice1")
+	const choice2 = document.getElementById("choice2")
 
-        if(state.lives<=0){
-            state.node="gameOver";
-            saveGame();
-            updateStats();
-            renderGame();
-            return;
-        }
-    }
+	if (!choice1 || !choice2) {
+		return
+	}
 
-    if(state.anger<=-5){
-        state.node="levelComplete";
-        saveGame();
-        updateStats();
-        renderGame();
-        return;
-    }
+	choice1.textContent =
+		dialogue.choices[0]?.text ?? ""
 
-    state.node=choice.next;
-    saveGame();
-    updateStats();
-    renderGame();
+	choice2.textContent =
+		dialogue.choices[1]?.text ?? ""
+
+	choice1.style.display =
+		dialogue.choices[0]
+			? "block"
+			: "none"
+
+	choice2.style.display =
+		dialogue.choices[1]
+			? "block"
+			: "none"
+
+
+	updateGameUI()
 }
 
-function addMessage(sender,text){
-    state.messages.push({sender,text});
-    renderMessages();
-    saveGame();
+
+function chooseDialogue(index) {
+	const dialogue = dialogueData[currentDialogue]
+
+	if (!dialogue) {
+		return
+	}
+
+	const choice = dialogue.choices[index]
+
+	if (!choice) {
+		return
+	}
+
+	// Сообщение игрока
+	addMessage(
+		"user",
+		choice.text
+	)
+
+	// Изменяем отношение Верити
+	anger += choice.anger ?? 0
+
+	// Переходим дальше
+	currentDialogue = choice.next
+
+	saveGame()
+
+	// Показываем следующий узел
+	renderDialogue()
+
+	checkRelationship()
 }
 
-function updateStats(){
-    const anger=document.getElementById("anger");
-    const lives=document.getElementById("lives");
-    if(anger)anger.textContent=state.anger<0?\`Любовь: \${Math.abs(state.anger)}/5\`:\`Злость: \${state.anger}/10\`;
-    if(lives)lives.textContent="❤".repeat(Math.max(0,state.lives));
+
+// ==============================
+// СООБЩЕНИЯ
+// ==============================
+
+function addMessage(sender, text) {
+	messages.push({
+		sender: sender,
+		text: text
+	})
+
+	renderMessages()
 }
 
-function triggerScreamer(){
-    const screamer=document.getElementById("verityScreamer");
-    if(!screamer)return;
-    screamer.classList.remove("active");
-    void screamer.offsetWidth;
-    screamer.classList.add("active");
-    setTimeout(()=>screamer.classList.remove("active"),700);
+
+function showVerityMessage(text) {
+	addMessage(
+		"verity",
+		text
+	)
 }
 
-function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 
-function resetGame(){localStorage.removeItem(SAVE_KEY);location.reload();}
-document.getElementById("resetGame")?.addEventListener("click",resetGame);
+function renderMessages() {
+	const messagesContainer =
+		document.getElementById("messages")
 
-/* Инвентарь */
+	if (!messagesContainer) {
+		return
+	}
 
-const items=[
-    {id:"coin",name:"Старая монета",image:"images/old_coin.png",description:"Странная старая монета.",rarity:"common",chance:50},
-    {id:"key",name:"Маленький ключ",image:"images/key.webp",description:"Неизвестно, что он открывает.",rarity:"uncommon",chance:30},
-    {id:"cassette",name:"Кассета",image:"images/cassette.png",description:"Верити почему-то не хочет, чтобы ты её включал.",rarity:"rare",chance:15},
-    {id:"glass",name:"Осколок зеркала",image:"images/glass.png",description:"Осколок старого зеркала.",rarity:"epic",chance:8},
-    {id:"eye",name:"Чёрный глаз",image:"images/eye.png",description:"Небольшой стеклянный шарик, похожий на глаз.",rarity:"mythic",chance:4},
-    {id:"note",name:"Старая записка",image:"images/note.webp",description:"Странная старая записка.",rarity:"legendary",chance:2}
-];
+	messagesContainer.innerHTML = ""
 
-function setupInventory(){
-    const button=document.getElementById("inventoryButton");
-    const modal=document.getElementById("inventoryModal");
-    const close=document.getElementById("closeInventory");
+	for (const message of messages) {
 
-    button?.addEventListener("click",()=>{modal.style.display="flex";renderInventory();});
-    close?.addEventListener("click",()=>modal.style.display="none");
-    modal?.addEventListener("click",e=>{if(e.target===modal)modal.style.display="none";});
-    document.getElementById("itemAdButton")?.addEventListener("click",rewardItem);
-    document.getElementById("skinButton")?.addEventListener("click",()=>alert("Система скинов пока находится в разработке."));
+		const messageElement =
+			document.createElement("div")
+
+		messageElement.classList.add(
+			"message",
+			message.sender === "user"
+				? "user"
+				: "verity"
+		)
+
+		messageElement.textContent =
+			message.text
+
+		messagesContainer.appendChild(
+			messageElement
+		)
+	}
+
+	messagesContainer.scrollTop =
+		messagesContainer.scrollHeight
 }
 
-function renderInventory(){
-    const grid=document.getElementById("inventoryGrid");
-    if(!grid)return;
-    grid.innerHTML="";
-    const ids=Object.keys(state.inventory);
 
-    ids.slice(0,15).forEach(id=>{
-        const item=items.find(item=>item.id===id);
-        if(!item)return;
-        const slot=document.createElement("div");
-        slot.className="inventory-slot";
+// ==============================
+// ОТНОШЕНИЯ
+// ==============================
 
-        const image=document.createElement("img");
-        image.src=item.image;
-        image.alt=item.name;
-        image.className="inventory-item";
-        slot.appendChild(image);
+const MAX_ANGER = 10
+const MAX_LOVE = 10
 
-        if(state.inventory[id]>1){
-            const amount=document.createElement("div");
-            amount.className="item-amount";
-            amount.textContent=state.inventory[id];
-            slot.appendChild(amount);
-        }
 
-        slot.addEventListener("click",()=>{
-            document.getElementById("itemName").textContent=item.name;
-            document.getElementById("itemDescription").textContent=item.description;
-            document.getElementById("itemRarity").textContent=item.rarity;
-        });
-        grid.appendChild(slot);
-    });
+function getRelationship() {
 
-    for(let i=ids.length;i<15;i++)grid.appendChild(document.createElement("div")).className="inventory-slot";
+	if (anger < 0) {
+		return {
+			type: "love",
+			value: Math.abs(anger)
+		}
+	}
+
+	return {
+		type: "anger",
+		value: anger
+	}
 }
 
-function rewardItem(){
-    const ids=Object.keys(state.inventory);
-    const item=getRandomItem();
 
-    if(ids.length>=15&&!state.inventory[item.id]){
-        showItemNotification("Инвентарь заполнен!");
-        return;
-    }
+function checkRelationship() {
 
-    state.inventory[item.id]=(state.inventory[item.id]||0)+1;
-    saveGame();
-    showItemNotification(\`Ты получил: \${item.name}\`);
-    renderInventory();
+	const relationship =
+		getRelationship()
+
+	if (
+		relationship.type === "anger" &&
+		relationship.value >= MAX_ANGER
+	) {
+		handleAngerMax()
+	}
+
+	if (
+		relationship.type === "love" &&
+		relationship.value >= MAX_LOVE
+	) {
+		handleLoveMax()
+	}
 }
 
-function getRandomItem(){
-    const random=Math.random()*100;
-    let chance=0;
-    for(const item of items){
-        chance+=item.chance;
-        if(random<chance)return item;
-    }
-    return items[0];
+
+function handleAngerMax() {
+
+	console.log("ЗЛОСТЬ ДОСТИГЛА МАКСИМУМА")
+
+	if (lives <= 0) {
+		return
+	}
+
+	lives--
+
+	// Сбрасываем злость
+	anger = 0
+
+	saveGame()
+	updateGameUI()
+
+	verityScreamer()
 }
 
-function showItemNotification(text){
-    const notification=document.getElementById("itemNotification");
-    const textElement=document.getElementById("notificationItem");
-    if(!notification||!textElement)return;
-    textElement.textContent=text;
-    notification.classList.add("show");
-    setTimeout(()=>notification.classList.remove("show"),2500);
+
+function handleLoveMax() {
+
+	console.log("ЛЮБОВЬ ДОСТИГЛА МАКСИМУМА")
+
+	// Пока просто выводим сообщение.
+	// Позже здесь сделаем переход
+	// на следующий уровень.
+
+	console.log(
+		"УРОВЕНЬ ПРОЙДЕН"
+	)
 }
 
-/* Визуальные эффекты */
 
-function screenFlicker(){
-    const screen=document.querySelector(".phone-screen");
-    if(!screen)return;
-    screen.classList.add("flicker");
-    setTimeout(()=>screen.classList.remove("flicker"),80);
-}
-function randomFlicker(){setTimeout(()=>{screenFlicker();randomFlicker();},Math.random()*10000+5000);}
-randomFlicker();
+// ==============================
+// UI ХАРАКТЕРИСТИК
+// ==============================
 
-function screenGlitch(){
-    const screen=document.querySelector(".phone-screen");
-    if(!screen)return;
-    screen.classList.remove("glitch");
-    void screen.offsetWidth;
-    screen.classList.add("glitch");
-    setTimeout(()=>screen.classList.remove("glitch"),350);
-}
-function randomGlitch(){setTimeout(()=>{screenGlitch();randomGlitch();},Math.random()*12000+7000);}
-randomGlitch();
+function updateGameUI() {
 
-function avatarGlitch(){
-    const avatar=document.querySelector(".avatar");
-    if(!avatar)return;
-    avatar.classList.remove("avatar-glitch");
-    void avatar.offsetWidth;
-    avatar.classList.add("avatar-glitch");
-    setTimeout(()=>avatar.classList.remove("avatar-glitch"),250);
-}
-function randomAvatarGlitch(){setTimeout(()=>{avatarGlitch();randomAvatarGlitch();},Math.random()*7500+800);}
-randomAvatarGlitch();
+	const relationshipLabel =
+		document.getElementById(
+			"relationshipLabel"
+		)
 
-function changeVerityStatus(){
-    const status=document.querySelector(".chat-status");
-    if(!status)return;
-    status.textContent="не в сети";
-    status.classList.add("offline");
-    setTimeout(()=>{
-        status.textContent="в сети";
-        status.classList.remove("offline");
-    },Math.random()*2500+1500);
-}
-function randomStatusChange(){setTimeout(()=>{changeVerityStatus();randomStatusChange();},Math.random()*20000+10000);}
-randomStatusChange();
+	const relationshipValue =
+		document.getElementById(
+			"relationshipValue"
+		)
 
-function changeVerityAvatar(){
-    const avatar=document.querySelector(".avatar img");
-    if(!avatar)return;
-    avatar.src="images/verity-v2.png";
-    setTimeout(()=>avatar.src="images/verity.png",20000);
+	const livesElement =
+		document.getElementById(
+			"livesValue"
+		)
+
+	const relationship =
+		getRelationship()
+
+	if (relationshipLabel && relationshipValue) {
+
+		if (relationship.type === "love") {
+
+			relationshipLabel.textContent =
+				"Любовь:"
+
+			relationshipValue.textContent =
+				relationship.value
+
+		} else {
+
+			relationshipLabel.textContent =
+				"Злость:"
+
+			relationshipValue.textContent =
+				relationship.value
+		}
+	}
+
+	if (livesElement) {
+		livesElement.textContent = lives
+	}
 }
-function randomAvatarChange(){setTimeout(()=>{changeVerityAvatar();randomAvatarChange();},Math.random()*120000+60000);}
-randomAvatarChange();
+
+
+// ==============================
+// ИНВЕНТАРЬ
+// ==============================
+
+const inventoryButton =
+	document.getElementById("inventoryButton")
+
+const inventoryModal =
+	document.getElementById("inventoryModal")
+
+const closeInventory =
+	document.getElementById("closeInventory")
+
+const inventoryGrid =
+	document.getElementById("inventoryGrid")
+
+
+function openInventory() {
+
+	if (!inventoryModal) {
+		return
+	}
+
+	inventoryModal.style.display =
+		"flex"
+
+	renderInventory()
+}
+
+
+function closeInventoryWindow() {
+
+	if (!inventoryModal) {
+		return
+	}
+
+	inventoryModal.style.display =
+		"none"
+}
+
+
+if (inventoryButton) {
+	inventoryButton.addEventListener(
+		"click",
+		openInventory
+	)
+}
+
+
+if (closeInventory) {
+	closeInventory.addEventListener(
+		"click",
+		closeInventoryWindow
+	)
+}
+
+
+if (inventoryModal) {
+
+	inventoryModal.addEventListener(
+		"click",
+		(event) => {
+
+			if (
+				event.target ===
+				inventoryModal
+			) {
+				closeInventoryWindow()
+			}
+		}
+	)
+}
+
+
+// ==============================
+// ПРЕДМЕТЫ
+// ==============================
+
+const items = [
+
+	{
+		id: "coin",
+		name: "Старая монета",
+		image: "images/old_coin.png",
+		description: "Странная старая монета.",
+		rarity: "common",
+		chance: 50
+	},
+
+	{
+		id: "key",
+		name: "Маленький ключ",
+		image: "images/key.webp",
+		description: "Неизвестно, что он открывает.",
+		rarity: "uncommon",
+		chance: 30
+	},
+
+	{
+		id: "cassette",
+		name: "Кассета",
+		image: "images/cassette.png",
+		description: "Верити почему-то не хочет, чтобы ты её включал.",
+		rarity: "rare",
+		chance: 15
+	},
+
+	{
+		id: "glass",
+		name: "Осколок зеркала",
+		image: "images/glass.png",
+		description: "Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
+		rarity: "epic",
+		chance: 8
+	},
+
+	{
+		id: "eye",
+		name: "Чёрный глаз",
+		image: "images/eye.png",
+		description: "Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
+		rarity: "mythic",
+		chance: 4
+	},
+
+	{
+		id: "note",
+		name: "Старая записка",
+		image: "images/note.webp",
+		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
+		rarity: "legendary",
+		chance: 2
+	}
+
+]
+
+
+function getRandomItem() {
+
+	const random =
+		Math.random() * 100
+
+	let currentChance = 0
+
+	for (const item of items) {
+
+		currentChance +=
+			item.chance
+
+		if (
+			random <
+			currentChance
+		) {
+			return item
+		}
+	}
+
+	return items[0]
+}
+
+
+function renderInventory() {
+
+	if (!inventoryGrid) {
+		return
+	}
+
+	inventoryGrid.innerHTML = ""
+
+	const inventoryItems =
+		Object.keys(inventory)
+
+	for (
+		let i = 0;
+		i < 15;
+		i++
+	) {
+
+		const slot =
+			document.createElement("div")
+
+		slot.classList.add(
+			"inventory-slot"
+		)
+
+		const itemId =
+			inventoryItems[i]
+
+		if (itemId) {
+
+			const item =
+				items.find(
+					item =>
+						item.id === itemId
+				)
+
+			if (item) {
+
+				const image =
+					document.createElement("img")
+
+				image.src = item.image
+				image.alt = item.name
+
+				image.classList.add(
+					"inventory-item"
+				)
+
+				slot.appendChild(image)
+
+
+				const amount =
+					document.createElement("div")
+
+				amount.classList.add(
+					"item-amount"
+				)
+
+				amount.textContent =
+					inventory[itemId] > 1
+						? inventory[itemId]
+						: ""
+
+				slot.appendChild(amount)
+
+
+				const tooltip =
+					document.createElement("div")
+
+				tooltip.classList.add(
+					"item-tooltip"
+				)
+
+				tooltip.textContent =
+					item.name
+
+				slot.appendChild(
+					tooltip
+				)
+
+
+				slot.addEventListener(
+					"click",
+					() => {
+
+						document.getElementById(
+							"itemName"
+						).textContent =
+							item.name
+
+						const rarityElement =
+							document.getElementById(
+								"itemRarity"
+							)
+
+						const rarityNames = {
+
+							common: "Обычная",
+							uncommon: "Необычная",
+							rare: "Редкая",
+							epic: "Эпическая",
+							mythic: "Мифическая",
+							legendary: "Легендарная"
+
+						}
+
+						rarityElement.textContent =
+							rarityNames[item.rarity]
+
+						rarityElement.className =
+							`item-rarity ${item.rarity}`
+
+
+						document.getElementById(
+							"itemDescription"
+						).textContent =
+							item.description
+					}
+				)
+			}
+		}
+
+		inventoryGrid.appendChild(slot)
+	}
+}
+
+
+// ==============================
+// РЕКЛАМА: ПРЕДМЕТ
+// ==============================
+
+function rewardItemAd() {
+
+	const usedSlots =
+		Object.keys(inventory).length
+
+	const randomItem =
+		getRandomItem()
+
+	if (
+		usedSlots >= 15 &&
+		!inventory[randomItem.id]
+	) {
+
+		showItemNotification(
+			"Инвентарь заполнен!"
+		)
+
+		return
+	}
+
+	inventory[randomItem.id] =
+		(inventory[randomItem.id] || 0) + 1
+
+	saveGame()
+
+	showItemNotification(
+		`Ты получил: ${randomItem.name}`
+	)
+
+	openInventory()
+
+	setTimeout(() => {
+
+		highlightItem(
+			Object.keys(inventory).length - 1
+		)
+
+	}, 100)
+}
+
+
+function showItemNotification(text) {
+
+	const notification =
+		document.getElementById(
+			"itemNotification"
+		)
+
+	const notificationItem =
+		document.getElementById(
+			"notificationItem"
+		)
+
+	if (!notification || !notificationItem) {
+		return
+	}
+
+	notificationItem.textContent =
+		text
+
+	notification.classList.add(
+		"show"
+	)
+
+	setTimeout(() => {
+
+		notification.classList.remove(
+			"show"
+		)
+
+	}, 2500)
+}
+
+
+function highlightItem(index) {
+
+	const slots =
+		document.querySelectorAll(
+			".inventory-slot"
+		)
+
+	const slot =
+		slots[index]
+
+	if (!slot) {
+		return
+	}
+
+	slot.classList.add(
+		"new-item"
+	)
+
+	setTimeout(() => {
+
+		slot.classList.remove(
+			"new-item"
+		)
+
+	}, 3000)
+}
+
+
+const itemAdButton =
+	document.getElementById(
+		"itemAdButton"
+	)
+
+if (itemAdButton) {
+
+	itemAdButton.addEventListener(
+		"click",
+		rewardItemAd
+	)
+}
+
+
+// ==============================
+// СКИНЫ
+// ==============================
+
+const skinButton =
+	document.getElementById(
+		"skinButton"
+	)
+
+if (skinButton) {
+
+	skinButton.addEventListener(
+		"click",
+		() => {
+
+			alert(
+				"Система скинов пока находится в разработке."
+			)
+
+		}
+	)
+}
+
+
+// ==============================
+// ЭФФЕКТЫ ЭКРАНА
+// ==============================
+
+function screenFlicker() {
+
+	const phoneScreen =
+		document.querySelector(
+			".phone-screen"
+		)
+
+	if (!phoneScreen) {
+		return
+	}
+
+	phoneScreen.classList.add(
+		"flicker"
+	)
+
+	setTimeout(() => {
+
+		phoneScreen.classList.remove(
+			"flicker"
+		)
+
+	}, 80)
+}
+
+
+function randomFlicker() {
+
+	const delay =
+		Math.random() * 10000 + 5000
+
+	setTimeout(() => {
+
+		screenFlicker()
+		randomFlicker()
+
+	}, delay)
+}
+
+
+function screenGlitch() {
+
+	const phoneScreen =
+		document.querySelector(
+			".phone-screen"
+		)
+
+	if (!phoneScreen) {
+		return
+	}
+
+	phoneScreen.classList.remove(
+		"glitch"
+	)
+
+	void phoneScreen.offsetWidth
+
+	phoneScreen.classList.add(
+		"glitch"
+	)
+
+	setTimeout(() => {
+
+		phoneScreen.classList.remove(
+			"glitch"
+		)
+
+	}, 350)
+}
+
+
+function randomGlitch() {
+
+	const delay =
+		Math.random() * 12000 + 7000
+
+	setTimeout(() => {
+
+		screenGlitch()
+		randomGlitch()
+
+	}, delay)
+}
+
+
+// ==============================
+// ГЛИТЧ АВАТАРА
+// ==============================
+
+function avatarGlitch() {
+
+	const avatar =
+		document.querySelector(
+			".avatar"
+		)
+
+	if (!avatar) {
+		return
+	}
+
+	avatar.classList.remove(
+		"avatar-glitch"
+	)
+
+	void avatar.offsetWidth
+
+	avatar.classList.add(
+		"avatar-glitch"
+	)
+
+	setTimeout(() => {
+
+		avatar.classList.remove(
+			"avatar-glitch"
+		)
+
+	}, 250)
+}
+
+
+function randomAvatarGlitch() {
+
+	const delay =
+		Math.random() * 7500 + 800
+
+	setTimeout(() => {
+
+		avatarGlitch()
+		randomAvatarGlitch()
+
+	}, delay)
+}
+
+
+// ==============================
+// СТАТУС ВЕРИТИ
+// ==============================
+
+function changeVerityStatus() {
+
+	const status =
+		document.querySelector(
+			".chat-status"
+		)
+
+	if (!status) {
+		return
+	}
+
+	status.textContent =
+		"не в сети"
+
+	status.classList.add(
+		"offline"
+	)
+
+	setTimeout(() => {
+
+		status.textContent =
+			"в сети"
+
+		status.classList.remove(
+			"offline"
+		)
+
+	}, Math.random() * 2500 + 1500)
+}
+
+
+function randomStatusChange() {
+
+	const delay =
+		Math.random() * 20000 + 10000
+
+	setTimeout(() => {
+
+		changeVerityStatus()
+		randomStatusChange()
+
+	}, delay)
+}
+
+
+// ==============================
+// СКРИМЕР
+// ==============================
+
+function verityScreamer() {
+
+	const screamer =
+		document.getElementById(
+			"verityScreamer"
+		)
+
+	if (!screamer) {
+		return
+	}
+
+	screamer.classList.remove(
+		"active"
+	)
+
+	// Перезапуск CSS-анимации
+	void screamer.offsetWidth
+
+	screamer.classList.add(
+		"active"
+	)
+
+	setTimeout(() => {
+
+		screamer.classList.remove(
+			"active"
+		)
+
+	}, 700)
+}
+
+
+// ==============================
+// СЛУЧАЙНЫЙ СКРИМЕР
+// ==============================
+
+// Пока отключён.
+//
+// Когда сделаем полноценную систему
+// злости и жизней, случайный скример
+// больше не будет нужен.
+
+
+/*
+function randomScreamer() {
+
+	const delay =
+		Math.random() * 180000 + 120000
+
+	setTimeout(() => {
+
+		verityScreamer()
+		randomScreamer()
+
+	}, delay)
+}
+
+randomScreamer()
+*/
+
+
+// ==============================
+// ВРЕМЕННАЯ СМЕНА АВАТАРА
+// ==============================
+
+function changeVerityAvatar() {
+
+	const avatar =
+		document.querySelector(
+			".avatar img"
+		)
+
+	if (!avatar) {
+		return
+	}
+
+	avatar.src =
+		"images/verity-v2.png"
+
+	setTimeout(() => {
+
+		avatar.src =
+			"images/verity.png"
+
+	}, 20000)
+}
+
+
+function randomAvatarChange() {
+
+	const delay =
+		Math.random() * 120000 + 60000
+
+	setTimeout(() => {
+
+		changeVerityAvatar()
+		randomAvatarChange()
+
+	}, delay)
+}
+
+
+// ==============================
+// КНОПКИ ДИАЛОГА
+// ==============================
+
+const choice1 =
+	document.getElementById("choice1")
+
+const choice2 =
+	document.getElementById("choice2")
+
+
+if (choice1) {
+
+	choice1.addEventListener(
+		"click",
+		() => {
+			chooseDialogue(0)
+		}
+	)
+}
+
+
+if (choice2) {
+
+	choice2.addEventListener(
+		"click",
+		() => {
+			chooseDialogue(1)
+		}
+	)
+}
+
+
+// ==============================
+// ЗАПУСК
+// ==============================
+
+renderMessages()
+updateGameUI()
+
+randomFlicker()
+randomGlitch()
+randomAvatarGlitch()
+randomStatusChange()
+randomAvatarChange()
+
+loadDialogue()
