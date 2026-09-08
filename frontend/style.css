@@ -1598,3 +1598,409 @@ body {
 		transform: scale(1) translate(0);
 	}
 }
+
+
+/* ==============================
+   КНОПКИ ВЫБОРА
+============================== */
+
+#choiceButtons {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	padding: 12px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+
+/* Сама кнопка */
+
+.choice-button {
+	position: relative;
+
+	width: 100%;
+	min-height: 48px;
+
+	padding: 12px 16px;
+
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 8px;
+
+	background:
+		linear-gradient(135deg,
+			rgba(35, 35, 35, 0.96),
+			rgba(20, 20, 20, 0.96));
+
+	color: #d8d8d8;
+
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 500;
+
+	text-align: left;
+
+	cursor: pointer;
+
+	transition:
+		background 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease,
+		transform 0.15s ease,
+		box-shadow 0.2s ease;
+
+	overflow: hidden;
+}
+
+
+/* Тонкая полоска слева */
+
+.choice-button::before {
+	content: "";
+
+	position: absolute;
+
+	left: 0;
+	top: 0;
+
+	width: 2px;
+	height: 100%;
+
+	background: rgba(255, 255, 255, 0.15);
+
+	transition:
+		background 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+
+/* Наведение */
+
+.choice-button:hover {
+	background:
+		linear-gradient(135deg,
+			rgba(45, 45, 45, 0.98),
+			rgba(25, 25, 25, 0.98));
+
+	border-color: rgba(255, 255, 255, 0.25);
+
+	color: #ffffff;
+
+	box-shadow:
+		0 0 12px rgba(255, 255, 255, 0.05);
+
+	transform: translateX(3px);
+}
+
+
+.choice-button:hover::before {
+	background: rgba(180, 180, 180, 0.7);
+
+	box-shadow:
+		0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+
+/* Нажатие */
+
+.choice-button:active {
+	transform: translateX(3px) scale(0.985);
+
+	background: rgba(15, 15, 15, 1);
+}
+
+
+/* Заблокированная кнопка */
+
+.choice-button:disabled {
+	cursor: default;
+
+	opacity: 0.5;
+
+	transform: none;
+
+	box-shadow: none;
+}
+
+
+/* Убираем стандартный outline браузера */
+
+.choice-button:focus {
+	outline: none;
+}
+
+
+/* Фокус с клавиатуры */
+
+.choice-button:focus-visible {
+	border-color: rgba(255, 255, 255, 0.35);
+
+	box-shadow:
+		0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+
+
+/* ==============================
+   ШКАЛА ОТНОШЕНИЙ
+============================== */
+
+.relationship-stat img {
+	width: 24px;
+	height: 24px;
+	object-fit: contain;
+	display: block;
+	flex-shrink: 0;
+}
+
+.relationship-line::before {
+	content: "";
+
+	position: absolute;
+	inset: 2px;
+
+	background:
+		repeating-linear-gradient(90deg,
+			#555 0,
+			#555 5px,
+			#333 5px,
+			#333 8px);
+
+	opacity: 0.8;
+}
+
+.relationship-point {
+	position: absolute;
+	z-index: 2;
+
+	top: -4px;
+	left: 50%;
+
+	width: 7px;
+	height: 18px;
+
+	background: #bbb;
+
+	border: 2px solid #111;
+
+	transform: translateX(-50%);
+
+	transition: left 0.4s ease;
+}
+
+.lives-container img {
+	display: flex;
+	flex-direction: row;
+	width: 48px;
+	height: 48px;
+}
+
+
+.game-hud {
+	width: 230px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	gap: 16px;
+
+	margin-left: 12px;
+	margin-top: 165px;
+}
+
+.relationship-stat {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+
+	width: 230px;
+}
+
+.relationship-icon {
+	width: 26px;
+	height: 26px;
+
+	object-fit: contain;
+	display: block;
+	flex-shrink: 0;
+}
+
+.relationship-line {
+	position: relative;
+
+	flex: 1;
+	height: 11px;
+
+	background: #292929;
+
+	border: 2px solid #111;
+
+	box-shadow:
+		inset 2px 2px 0 #444,
+		inset -2px -2px 0 #1a1a1a;
+
+	box-sizing: border-box;
+}
+
+.lives-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	gap: 4px;
+}
+
+.lives-label {
+	font-size: 10px;
+	font-weight: bold;
+	color: #888;
+	letter-spacing: 1px;
+}
+
+.lives-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	gap: 2px;
+}
+
+.life-heart {
+	width: 30px;
+	height: 30px;
+
+	object-fit: contain;
+	display: block;
+}
+
+
+
+
+
+
+
+
+
+
+.game {
+	display: flex;
+	align-items: flex-start;
+}
+
+.right-panel {
+	display: flex;
+	flex-direction: column;
+
+	width: 230px;
+
+	margin-left: 12px;
+}
+
+.game-hud {
+	width: 230px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	gap: 8px;
+
+	margin-top: 45px;
+}
+
+.relationship-stat {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+
+	width: 230px;
+}
+
+.relationship-icon {
+	width: 26px;
+	height: 26px;
+
+	object-fit: contain;
+	display: block;
+	flex-shrink: 0;
+}
+
+.relationship-line {
+	position: relative;
+
+	flex: 1;
+	height: 11px;
+
+	background: #292929;
+
+	border: 2px solid #111;
+
+	box-shadow:
+		inset 2px 2px 0 #444,
+		inset -2px -2px 0 #1a1a1a;
+
+	box-sizing: border-box;
+}
+
+.relationship-point {
+	position: absolute;
+	z-index: 2;
+
+	top: -4px;
+	left: 50%;
+
+	width: 7px;
+	height: 17px;
+
+	background: #bbb;
+
+	border: 2px solid #111;
+
+	transform: translateX(-50%);
+
+	transition: left 0.4s ease;
+}
+
+.lives-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	gap: 3px;
+}
+
+.lives-label {
+	font-size: 10px;
+	font-weight: bold;
+	color: #888;
+	letter-spacing: 1px;
+}
+
+.lives-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	gap: 2px;
+}
+
+.life-heart {
+	width: 30px;
+	height: 30px;
+
+	object-fit: contain;
+	display: block;
+}
+
+.game-panel {
+	margin-top: 75px;
+}
+
+.game-hud {
+	margin-top: 45px;
+}
+
+.game-panel {
+	margin-top: 75px;
+}

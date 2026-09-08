@@ -1,6 +1,5 @@
 let gameState = {
 	anger: 0,
-	love: 0,
 	lives: 3,
 	level: 1
 };

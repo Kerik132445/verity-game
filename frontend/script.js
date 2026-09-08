@@ -14,6 +14,11 @@ let lives = 3
 
 let dialogueData = {}
 
+let isWaitingForReply = false
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 // ==============================
 // СОХРАНЕНИЕ
@@ -130,7 +135,12 @@ function renderDialogue() {
 }
 
 
-function chooseDialogue(index) {
+async function chooseDialogue(index) {
+
+	if (isWaitingForReply) {
+		return
+	}
+
 	const dialogue = dialogueData[currentDialogue]
 
 	if (!dialogue) {
@@ -143,38 +153,146 @@ function chooseDialogue(index) {
 		return
 	}
 
-	// Сообщение игрока
-	addMessage(
-		"user",
-		choice.text
-	)
+	// Блокируем повторные нажатия
+	isWaitingForReply = true
 
-	// Изменяем отношение Верити
+	const choice1 = document.getElementById("choice1")
+	const choice2 = document.getElementById("choice2")
+
+	if (choice1) {
+		choice1.disabled = true
+	}
+
+	if (choice2) {
+		choice2.disabled = true
+	}
+
+	// Сообщение игрока
+	addMessage("user", choice.text)
+
+	// Изменяем отношение
 	anger += choice.anger ?? 0
 
-	// Переходим дальше
+	// Переходим к следующему диалогу
 	currentDialogue = choice.next
 
+	// Задержка перед ответом Верити
+
+	// Верити начинает печатать
+	showTyping()
+
+	// Задержка перед ответом
+	const replyDelay =
+		Math.random() * 700 + 700
+
+	await sleep(replyDelay)
+
+	// Убираем "печатает..."
+	hideTyping()
+
+	const nextDialogue =
+		dialogueData[currentDialogue]
+
+	// Ответ Верити
+	if (nextDialogue?.verity) {
+		addMessage("verity", nextDialogue.verity)
+	}
+
 	saveGame()
-
-	// Показываем следующий узел
 	renderDialogue()
-
 	checkRelationship()
+
+	// Разблокируем кнопки
+	isWaitingForReply = false
+
+	if (choice1) {
+		choice1.disabled = false
+	}
+
+	if (choice2) {
+		choice2.disabled = false
+	}
 }
 
 
 // ==============================
 // СООБЩЕНИЯ
 // ==============================
+function showTyping() {
+	const messagesContainer =
+		document.getElementById("messages")
+
+	if (!messagesContainer) {
+		return
+	}
+
+	const typing = document.createElement("div")
+
+	typing.classList.add(
+		"message",
+		"verity",
+		"typing-message"
+	)
+
+	typing.id = "verityTyping"
+
+	typing.innerHTML = `
+		<div class="typing">
+			<span></span>
+			<span></span>
+			<span></span>
+		</div>
+	`
+
+	messagesContainer.appendChild(typing)
+
+	messagesContainer.scrollTop =
+		messagesContainer.scrollHeight
+}
+
+
+function hideTyping() {
+	const typing =
+		document.getElementById("verityTyping")
+
+	if (typing) {
+		typing.remove()
+	}
+}
+
 
 function addMessage(sender, text) {
+
 	messages.push({
 		sender: sender,
 		text: text
 	})
 
-	renderMessages()
+	const messagesContainer =
+		document.getElementById("messages")
+
+	if (!messagesContainer) {
+		return
+	}
+
+	const messageElement =
+		document.createElement("div")
+
+	messageElement.classList.add(
+		"message",
+		sender === "user"
+			? "user"
+			: "verity"
+	)
+
+	messageElement.textContent = text
+
+	messagesContainer.appendChild(
+		messageElement
+	)
+
+	messagesContainer.scrollTop =
+		messagesContainer.scrollHeight
 }
 
 
@@ -306,46 +424,44 @@ function handleLoveMax() {
 
 function updateGameUI() {
 
-	const relationshipLabel =
-		document.getElementById(
-			"relationshipLabel"
-		)
+	const relationshipPoint =
+		document.getElementById("relationshipPoint")
 
-	const relationshipValue =
-		document.getElementById(
-			"relationshipValue"
-		)
+	const livesContainer =
+		document.getElementById("livesContainer")
 
-	const livesElement =
-		document.getElementById(
-			"livesValue"
-		)
+	// Позиция точки на шкале отношений
+	if (relationshipPoint) {
 
-	const relationship =
-		getRelationship()
+		const percent =
+			((10 - anger) / 20) * 100
 
-	if (relationshipLabel && relationshipValue) {
-
-		if (relationship.type === "love") {
-
-			relationshipLabel.textContent =
-				"Любовь:"
-
-			relationshipValue.textContent =
-				relationship.value
-
-		} else {
-
-			relationshipLabel.textContent =
-				"Злость:"
-
-			relationshipValue.textContent =
-				relationship.value
-		}
+		relationshipPoint.style.left =
+			`${percent}%`
 	}
 
-	if (livesElement) {
-		livesElement.textContent = lives
+	// Сердца жизней
+	if (livesContainer) {
+
+		livesContainer.innerHTML = ""
+
+		for (let i = 0; i < 3; i++) {
+
+			const heart =
+				document.createElement("img")
+
+			heart.classList.add("life-heart")
+
+			if (i < lives) {
+				heart.src = "images/heart.png"
+			} else {
+				heart.src = "images/bad-heart.png"
+			}
+
+			heart.alt = ""
+
+			livesContainer.appendChild(heart)
+		}
 	}
 }
 
@@ -1105,10 +1221,13 @@ if (choice2) {
 	)
 }
 
-
 // ==============================
 // ЗАПУСК
 // ==============================
+
+localStorage.clear()
+
+loadGame()
 
 renderMessages()
 updateGameUI()

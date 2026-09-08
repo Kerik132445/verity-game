@@ -47,20 +47,6 @@
 							<div class="chat-status">в сети</div>
 						</div>
 
-						<div class="game-stats">
-
-							<div class="anger-stat">
-								<span id="relationshipLabel">Злость:</span>
-								<span id="relationshipValue">0</span>
-							</div>
-
-							<div class="lives-stat">
-								Жизни:
-								<span id="livesValue">3</span>
-							</div>
-
-						</div>
-
 					</div>
 
 					<div id="messages"></div>
@@ -78,47 +64,76 @@
 			</div>
 		</div>
 
-		<div class="game-panel">
+		<div class="right-panel">
+			<div class="game-hud">
 
-			<button id="inventoryButton" class="game-button" title="Инвентарь">
-				<img src="images/chest.png" alt="Инвентарь">
-				<span>ИНВЕНТАРЬ</span>
-			</button>
 
-			<button id="itemAdButton" class="game-button" title="Получить предмет">
-				<img src="images/items.png" alt="Предмет">
-				<span>ПОЛУЧИТЬ ПРЕДМЕТ</span>
-			</button>
+				<div class="relationship-stat">
 
-			<button id="skinButton" class="game-button" title="Скины Верити">
-				<img src="images/skins.png" alt="Скины">
-				<span>СКИНЫ</span>
-			</button>
+					<img src="images/angry.png" class="relationship-icon" alt="Злость">
 
-			<div id="inventoryModal" class="inventory-modal">
-
-				<div class="inventory-window">
-
-					<div class="inventory-header">
-
-						<span>Инвентарь</span>
-
-						<button id="closeInventory">×</button>
-
+					<div class="relationship-line">
+						<div id="relationshipPoint" class="relationship-point">
+						</div>
 					</div>
 
-					<div id="inventoryGrid" class="inventory-grid"></div>
+					<img src="images/love.png" class="relationship-icon" alt="Любовь">
 
-					<div id="itemInfo" class="item-info">
+				</div>
 
-						<div id="itemName" class="item-name"></div>
+				<div class="lives-stat">
 
-						<div id="itemRarity" class="item-rarity"></div>
+					<div id="livesContainer" class="lives-container">
+						<img src="images/heart.png" class="minecraft-heart">
+						<img src="images/heart.png" class="minecraft-heart">
+						<img src="images/heart.png" class="minecraft-heart">
+					</div>
+				</div>
 
-						<div id="itemDescription" class="item-description"></div>
+			</div>
+
+			<div class="game-panel">
+
+				<button id="inventoryButton" class="game-button" title="Инвентарь">
+					<img src="images/chest.png" alt="Инвентарь">
+					<span>ИНВЕНТАРЬ</span>
+				</button>
+
+				<button id="itemAdButton" class="game-button" title="Получить предмет">
+					<img src="images/items.png" alt="Предмет">
+					<span>ПОЛУЧИТЬ ПРЕДМЕТ</span>
+				</button>
+
+				<button id="skinButton" class="game-button" title="Скины Верити">
+					<img src="images/skins.png" alt="Скины">
+					<span>СКИНЫ</span>
+				</button>
+
+				<div id="inventoryModal" class="inventory-modal">
+
+					<div class="inventory-window">
+
+						<div class="inventory-header">
+
+							<span>Инвентарь</span>
+
+							<button id="closeInventory">×</button>
+
+						</div>
+
+						<div id="inventoryGrid" class="inventory-grid"></div>
+
+						<div id="itemInfo" class="item-info">
+
+							<div id="itemName" class="item-name"></div>
+
+							<div id="itemRarity" class="item-rarity"></div>
+
+							<div id="itemDescription" class="item-description"></div>
+
+						</div>
 
 					</div>
-
 				</div>
 			</div>
 		</div>
