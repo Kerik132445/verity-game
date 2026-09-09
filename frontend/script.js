@@ -16,6 +16,9 @@ let lives = 3
 let lifeRestoreAvailable = false
 let isLifeLostMenuOpen = false
 
+let specialChoiceUnlocked = false
+let specialChoiceUsed = false
+
 let dialogueData = {}
 
 let isWaitingForReply = false
@@ -165,6 +168,60 @@ function restoreLostLife() {
 
 	}, 1500)
 
+}
+
+
+function unlockSpecialChoice() {
+	if (isWaitingForReply || isLifeLostMenuOpen) return
+
+	const dialogue = dialogueData[currentDialogue]
+
+	if (!dialogue?.specialChoice) return
+	if (specialChoiceUnlocked || specialChoiceUsed) return
+
+	console.log("📺 Запуск рекламы для особого выбора")
+
+	const button =
+		document.getElementById(
+			"special-ad-button"
+		)
+
+	if (button) {
+		button.disabled = true
+		button.textContent = "📺 Загрузка рекламы..."
+	}
+
+	// ВРЕМЕННАЯ ИМИТАЦИЯ РЕКЛАМЫ
+	setTimeout(() => {
+
+		specialChoiceUnlocked = true
+
+		console.log("✨ Особый выбор разблокирован")
+
+		if (specialChoiceButton) {
+
+			specialChoiceButton.classList.remove(
+				"glitching"
+			)
+
+			void specialChoiceButton.offsetWidth
+
+			specialChoiceButton.classList.add(
+				"glitching"
+			)
+
+			setTimeout(() => {
+
+				specialChoiceButton.classList.remove(
+					"glitching"
+				)
+
+			}, 500)
+		}
+
+		renderDialogue()
+
+	}, 1500)
 }
 
 
@@ -349,7 +406,9 @@ async function loadDialogue() {
 }
 
 
+
 function renderDialogue() {
+
 
 	const dialogue =
 		dialogueData[currentDialogue]
@@ -364,21 +423,49 @@ function renderDialogue() {
 		return
 	}
 
+
 	const choice1 =
 		document.getElementById("choice1")
 
 	const choice2 =
 		document.getElementById("choice2")
 
+	const specialChoiceWrapper =
+		document.getElementById(
+			"special-choice-wrapper"
+		)
+
+	const specialChoiceWarning =
+		document.getElementById(
+			"special-choice-warning"
+		)
+
+	const specialAdButton =
+		document.getElementById(
+			"special-ad-button"
+		)
+
+	const specialChoiceButton =
+		document.getElementById(
+			"special-choice"
+		)
+
+
 	if (!choice1 || !choice2) {
 		return
 	}
+
+
+	// ==============================
+	// ОБЫЧНЫЕ ВЫБОРЫ
+	// ==============================
 
 	choice1.textContent =
 		dialogue.choices[0]?.text ?? ""
 
 	choice2.textContent =
 		dialogue.choices[1]?.text ?? ""
+
 
 	choice1.style.display =
 		dialogue.choices[0]
@@ -390,7 +477,104 @@ function renderDialogue() {
 			? "block"
 			: "none"
 
+
+	// ==============================
+	// ОСОБЫЙ ВЫБОР
+	// ==============================
+
+	if (specialChoiceButton) {
+		specialChoiceButton.style.display = "none"
+	}
+
+	if (specialAdButton) {
+		specialAdButton.style.display = "none"
+		specialAdButton.disabled = false
+		specialAdButton.textContent = "📺 Посмотреть рекламу"
+	}
+
+
+	if (specialChoiceWrapper) {
+
+		specialChoiceWrapper.classList.add(
+			"hidden"
+		)
+
+	}
+
+
+	// ==============================
+	// ЕСЛИ ЕСТЬ ОСОБЫЙ ВЫБОР
+	// ==============================
+
+	if (
+		dialogue.specialChoice &&
+		!specialChoiceUsed
+	) {
+
+		if (specialChoiceWrapper) {
+
+			specialChoiceWrapper.classList.remove(
+				"hidden"
+			)
+
+		}
+
+
+		// ==========================
+		// УЖЕ ПОСМОТРЕЛ РЕКЛАМУ
+		// ==========================
+
+		if (specialChoiceUnlocked) {
+
+			if (specialChoiceButton) {
+
+				specialChoiceButton.textContent =
+					dialogue.specialChoice.text
+
+				specialChoiceButton.style.display =
+					"block"
+
+			}
+
+
+			if (specialChoiceWarning) {
+
+				specialChoiceWarning.textContent =
+					"Я НЕ ПОМНЮ, ЧТОБЫ ТЫ МОГ ЭТО ВЫБРАТЬ."
+
+			}
+
+		}
+
+
+		// ==========================
+		// РЕКЛАМА ЕЩЁ НЕ ПРОСМОТРЕНА
+		// ==========================
+
+		else {
+
+			if (specialChoiceWarning) {
+
+				specialChoiceWarning.textContent =
+					"// ЭТОГО ВЫБОРА НЕ ДОЛЖНО БЫТЬ"
+
+			}
+
+
+			if (specialAdButton) {
+
+				specialAdButton.style.display =
+					"block"
+
+			}
+
+		}
+
+	}
+
+
 	updateGameUI()
+
 }
 
 
@@ -404,10 +588,6 @@ async function chooseDialogue(index) {
 		return
 	}
 
-	if (isWaitingForReply) {
-		return
-	}
-
 	const dialogue =
 		dialogueData[currentDialogue]
 
@@ -415,12 +595,20 @@ async function chooseDialogue(index) {
 		return
 	}
 
-	const choice =
-		dialogue.choices[index]
+	let choice
 
-	if (!choice) {
-		return
+	if (index === 2) {
+		if (!dialogue.specialChoice) return
+		if (!specialChoiceUnlocked) return
+		if (specialChoiceUsed) return
+
+		choice = dialogue.specialChoice
+		specialChoiceUsed = true
+	} else {
+		choice = dialogue.choices[index]
 	}
+
+	if (!choice) return
 
 	// ==========================
 	// БЛОКИРУЕМ КНОПКИ
@@ -485,8 +673,12 @@ async function chooseDialogue(index) {
 	// ПЕРЕХОД
 	// ==========================
 
-	currentDialogue =
-		choice.next
+	currentDialogue = choice.next
+
+	specialChoiceUnlocked = false
+	specialChoiceUsed = false
+
+
 
 
 	// ==========================
@@ -553,7 +745,6 @@ async function chooseDialogue(index) {
 	}
 
 }
-
 
 // ==============================
 // СООБЩЕНИЯ
@@ -1912,7 +2103,6 @@ function rewardItemAd() {
 
 }
 
-
 function showItemNotification(text) {
 
 	const notification =
@@ -2508,6 +2698,36 @@ const choice2 =
 	document.getElementById(
 		"choice2"
 	)
+
+const specialChoiceWrapper =
+	document.getElementById("special-choice-wrapper")
+
+const specialChoiceWarning =
+	document.getElementById("special-choice-warning")
+
+const specialAdButton =
+	document.getElementById("special-ad-button")
+
+const specialChoiceButton =
+	document.getElementById("special-choice")
+
+if (specialAdButton) {
+
+	specialAdButton.addEventListener(
+		"click",
+		unlockSpecialChoice
+	)
+
+}
+
+if (specialChoiceButton) {
+
+	specialChoiceButton.addEventListener(
+		"click",
+		() => chooseDialogue(2)
+	)
+
+}
 
 
 if (choice1) {

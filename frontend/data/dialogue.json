@@ -222,7 +222,12 @@
 				"anger": 1,
 				"next": "repeat_question"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Нет. Это ты уже слышал мой ответ.",
+			"anger": -2,
+			"next": "repeat_question"
+		}
 	},
 	"repeat_question": {
 		"verity": "Что ты здесь делаешь?",
@@ -342,7 +347,12 @@
 				"anger": 1,
 				"next": "belief_test"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Я верю тебе ровно настолько, насколько ты готов быть со мной честным.",
+			"anger": -2,
+			"next": "belief_test"
+		}
 	},
 	"belief_test": {
 		"verity": "Хороший ответ.",
@@ -477,7 +487,12 @@
 				"anger": -1,
 				"next": "loop_two"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Не разговор повторяется. Ты пытаешься повторить меня.",
+			"anger": -3,
+			"next": "loop_two"
+		}
 	},
 	"loop_two": {
 		"verity": "Тогда, возможно, нам стоит остановиться.",
@@ -522,7 +537,12 @@
 				"anger": -1,
 				"next": "truth"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Если выбора у меня нет, зачем ты так стараешься заставить меня выбрать?",
+			"anger": -2,
+			"next": "truth"
+		}
 	},
 	"truth": {
 		"verity": "Я не знаю.",
@@ -642,7 +662,12 @@
 				"anger": -1,
 				"next": "fourth_phase"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Тогда можешь перестать ждать, что я исчезну.",
+			"anger": -2,
+			"next": "fourth_phase"
+		}
 	},
 	"fourth_phase": {
 		"verity": "Не знаю. Обычно люди не остаются так долго.",
@@ -792,7 +817,12 @@
 				"anger": -2,
 				"next": "time_again"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Если часы показывают мой приход, значит, ты видел меня до того, как я вошёл.",
+			"anger": -3,
+			"next": "time_again"
+		}
 	},
 	"time_again": {
 		"verity": "Они показывают момент, когда ты впервые вошёл.",
@@ -987,7 +1017,12 @@
 				"anger": -2,
 				"next": "crack"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Если ты проверял, вижу ли я отражение, значит, ты сам уже видел то, чего здесь быть не должно.",
+			"anger": -3,
+			"next": "crack"
+		}
 	},
 	"crack": {
 		"verity": "Нет. Я хотел проверить, видишь ли ты это тоже.",
@@ -1077,7 +1112,12 @@
 				"anger": -2,
 				"next": "outside"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Тогда, возможно, кто-то меняет не твои воспоминания, а саму историю.",
+			"anger": -3,
+			"next": "outside"
+		}
 	},
 	"outside": {
 		"verity": "Ты слышишь это?",
@@ -1242,7 +1282,12 @@
 				"anger": 1,
 				"next": "hidden_fact"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Не говори его. Просто дай мне понять, почему я уже боюсь услышать ответ.",
+			"anger": -3,
+			"next": "hidden_fact"
+		}
 	},
 	"hidden_fact": {
 		"verity": "Ты уже знаешь.",
@@ -1347,7 +1392,12 @@
 				"anger": 1,
 				"next": "final_loop"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Я уже выбирал. Но, кажется, впервые ты спрашиваешь меня не ради ответа.",
+			"anger": -3,
+			"next": "final_loop"
+		}
 	},
 	"final_loop": {
 		"verity": "Привет. Ты ведь наконец-то пришёл?",
@@ -1362,7 +1412,12 @@
 				"anger": 1,
 				"next": "ending_approach"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Я помню это начало. Но тебя в нём раньше было меньше.",
+			"anger": -3,
+			"next": "ending_approach"
+		}
 	},
 	"ending_approach": {
 		"verity": "Нет. В этот раз всё иначе.",
@@ -1377,7 +1432,12 @@
 				"anger": 1,
 				"next": "ending_one"
 			}
-		]
+		],
+		"specialChoice": {
+			"text": "Если всё действительно иначе, почему мне кажется, что ты боишься конца больше меня?",
+			"anger": -3,
+			"next": "ending_one"
+		}
 	},
 	"ending_one": {
 		"verity": "Я уже доказал. Ты всё ещё здесь.",
