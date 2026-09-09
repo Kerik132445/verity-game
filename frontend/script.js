@@ -8,6 +8,9 @@ console.log("VERITY GAME ЗАПУЩЕН")
 let inventory = {}
 let messages = []
 
+let hintCharges = 0
+let hintShown = false
+
 let currentDialogue = "start"
 
 let anger = 9
@@ -406,6 +409,149 @@ async function loadDialogue() {
 }
 
 
+function getHint(dialogue) {
+
+	const choice1 =
+		dialogue.choices[0]
+
+	const choice2 =
+		dialogue.choices[1]
+
+	if (!choice1 || !choice2) {
+		return ""
+	}
+
+	if (choice1.anger < choice2.anger) {
+
+		return "Кажется, первый ответ может немного успокоить Верити."
+
+	}
+
+	if (choice2.anger < choice1.anger) {
+
+		return "Кажется, второй ответ может немного успокоить Верити."
+
+	}
+
+	return "Похоже, Верити отреагирует на оба ответа примерно одинаково."
+}
+
+function unlockHint() {
+	if (isWaitingForReply || isLifeLostMenuOpen) {
+		return
+	}
+
+	if (hintCharges > 0) {
+		if (hintShown) {
+			return
+		}
+
+		showHint()
+		return
+	}
+
+	const dialogue = dialogueData[currentDialogue]
+
+	if (!dialogue?.choices?.length) {
+		return
+	}
+
+	const button = document.getElementById("hint-button")
+
+	if (!button) {
+		console.error("❌ Кнопка подсказки не найдена")
+		return
+	}
+
+	button.disabled = true
+	button.classList.add("loading")
+	button.textContent = "📺 Загрузка рекламы..."
+
+	console.log("📺 Имитация загрузки рекламы...")
+
+	setTimeout(() => {
+
+		console.log("📺 Реклама закончилась")
+
+		hintCharges = 3
+		hintShown = false
+
+		button.disabled = false
+		button.classList.remove("loading")
+
+		showHint()
+
+	}, 1500)
+}
+
+function showHint() {
+
+	console.log("💡 showHint() запустилась")
+
+	if (hintCharges <= 0) {
+		console.log("❌ hintCharges =", hintCharges)
+		return
+	}
+
+	const dialogue = dialogueData[currentDialogue]
+
+	console.log("📖 dialogue =", dialogue)
+
+	if (!dialogue?.choices?.length) {
+		console.log("❌ У текущего диалога нет choices")
+		return
+	}
+
+	const message = document.getElementById("hint-message")
+
+	console.log("🔎 hint-message =", message)
+
+	if (!message) {
+		console.error("❌ Элемент #hint-message НЕ НАЙДЕН")
+		return
+	}
+
+	const hint = getHint(dialogue)
+
+	console.log("💡 Подсказка =", hint)
+
+	hintCharges--
+	hintShown = true
+
+	message.textContent = hint
+	message.style.display = "block"
+
+	updateHintButton()
+}
+
+function updateHintButton() {
+
+	const button =
+		document.getElementById("hint-button")
+
+	if (!button) {
+		return
+	}
+
+	if (hintCharges > 0) {
+
+		button.disabled = false
+
+		button.innerHTML =
+			`<span class="hint-icon">?</span>
+			 <span>ПОДСКАЗКА • ${hintCharges}</span>`
+
+	} else {
+
+		button.disabled = false
+
+		button.innerHTML =
+			`<span class="hint-icon">?</span>
+			 <span>ПОДСКАЗКА</span>`
+	}
+}
+
+
 
 function renderDialogue() {
 
@@ -429,6 +575,16 @@ function renderDialogue() {
 
 	const choice2 =
 		document.getElementById("choice2")
+
+	const hintButton =
+		document.getElementById(
+			"hint-button"
+		)
+
+	const hintMessage =
+		document.getElementById(
+			"hint-message"
+		)
 
 	const specialChoiceWrapper =
 		document.getElementById(
@@ -610,6 +766,9 @@ async function chooseDialogue(index) {
 
 	if (!choice) return
 
+	specialChoiceUnlocked = false
+	specialChoiceUsed = false
+
 	// ==========================
 	// БЛОКИРУЕМ КНОПКИ
 	// ==========================
@@ -673,10 +832,23 @@ async function chooseDialogue(index) {
 	// ПЕРЕХОД
 	// ==========================
 
+	hintShown = false
+
 	currentDialogue = choice.next
 
 	specialChoiceUnlocked = false
 	specialChoiceUsed = false
+
+	hintShown = false
+
+	const hintMessage =
+		document.getElementById("hint-message")
+
+	if (hintMessage) {
+		hintMessage.style.display = "none"
+	}
+
+	renderDialogue()
 
 
 
@@ -2699,6 +2871,21 @@ const choice2 =
 		"choice2"
 	)
 
+const hintWrapper =
+	document.getElementById(
+		"hint-wrapper"
+	)
+
+const hintButton =
+	document.getElementById(
+		"hint-button"
+	)
+
+const hintMessage =
+	document.getElementById(
+		"hint-message"
+	)
+
 const specialChoiceWrapper =
 	document.getElementById("special-choice-wrapper")
 
@@ -2725,6 +2912,15 @@ if (specialChoiceButton) {
 	specialChoiceButton.addEventListener(
 		"click",
 		() => chooseDialogue(2)
+	)
+
+}
+
+if (hintButton) {
+
+	hintButton.addEventListener(
+		"click",
+		unlockHint
 	)
 
 }

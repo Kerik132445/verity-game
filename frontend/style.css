@@ -2664,3 +2664,138 @@ body {
 		filter: none;
 	}
 }
+
+
+
+
+
+
+
+/* ==============================
+   ПОМОЩЬ В ВЫБОРЕ
+   ============================== */
+
+.hint-wrapper {
+	width: 100%;
+	margin-top: 10px;
+	display: flex;
+	justify-content: center;
+}
+
+.hint-button {
+	width: 78%;
+	min-height: 38px;
+
+	background: rgba(255, 255, 255, 0.025);
+
+	border: 1px solid rgba(255, 255, 255, 0.12);
+
+	color: rgba(255, 255, 255, 0.45);
+
+	font-family: monospace;
+	font-size: 10px;
+	letter-spacing: 1.5px;
+
+	cursor: pointer;
+
+	transition:
+		background 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease,
+		transform 0.2s ease;
+}
+
+.hint-button:hover {
+	background: rgba(255, 255, 255, 0.05);
+
+	border-color:
+		rgba(255, 255, 255, 0.25);
+
+	color: rgba(255, 255, 255, 0.75);
+
+	transform: translateY(-1px);
+}
+
+.hint-button:active {
+	transform: translateY(0);
+}
+
+.hint-icon {
+	display: inline-flex;
+
+	align-items: center;
+	justify-content: center;
+
+	width: 16px;
+	height: 16px;
+
+	margin-right: 6px;
+
+	border: 1px solid rgba(255, 255, 255, 0.25);
+
+	font-size: 10px;
+}
+
+/* Когда подсказка временно загружается */
+
+.hint-button.loading {
+	opacity: 0.5;
+	cursor: default;
+}
+
+/* Текст самой подсказки */
+
+.hint-message {
+	width: 78%;
+
+	margin: 8px auto 0;
+
+	padding: 8px 10px;
+
+	box-sizing: border-box;
+
+	background: rgba(0, 0, 0, 0.2);
+
+	border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+	color: rgba(255, 255, 255, 0.55);
+
+	font-family: monospace;
+	font-size: 9px;
+	line-height: 1.5;
+
+	animation: hintAppear 0.3s ease;
+}
+
+@keyframes hintAppear {
+
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+}
+
+
+
+
+#hint-message {
+	display: none;
+	margin-top: 8px;
+	padding: 8px 10px;
+
+	font-family: monospace;
+	font-size: 11px;
+	line-height: 1.4;
+
+	color: rgba(255, 255, 255, 0.55);
+	background: rgba(255, 255, 255, 0.03);
+	border-left: 1px solid rgba(255, 255, 255, 0.15);
+
+	text-align: left;
+}
