@@ -2091,3 +2091,355 @@ body {
 
 	pointer-events: none;
 }
+
+
+
+
+
+
+
+
+/* ==============================
+   МЕНЮ ПОТЕРИ ЖИЗНИ
+   ============================== */
+
+.life-lost-overlay {
+
+	position: absolute;
+
+	inset: 0;
+
+	display: flex;
+
+	align-items: center;
+
+	justify-content: center;
+
+	background: rgba(0, 0, 0, 0.78);
+
+	backdrop-filter: blur(5px);
+
+	z-index: 9999;
+
+	opacity: 0;
+
+	visibility: hidden;
+
+	pointer-events: none;
+
+	transition:
+		opacity 0.3s ease,
+		visibility 0.3s ease;
+}
+
+
+.life-lost-overlay.active {
+
+	opacity: 1;
+
+	visibility: visible;
+
+	pointer-events: auto;
+
+}
+
+
+.life-lost-menu {
+
+	width: min(360px, 85%);
+
+	padding: 28px 22px;
+
+	text-align: center;
+
+	background: #111;
+
+	border: 1px solid rgba(255, 255, 255, 0.12);
+
+	border-radius: 18px;
+
+	box-shadow:
+		0 20px 60px rgba(0, 0, 0, 0.7);
+
+	transform: scale(0.92);
+
+	transition:
+		transform 0.3s ease;
+}
+
+
+.life-lost-overlay.active .life-lost-menu {
+
+	transform: scale(1);
+
+}
+
+
+.life-lost-menu h2 {
+	margin: 0 0 20px;
+
+	font-size: 22px;
+	font-weight: 800;
+	letter-spacing: 2px;
+
+	color: #8b0000;
+
+	text-shadow:
+		0 0 3px rgba(139, 0, 0, 0.9),
+		0 0 8px rgba(80, 0, 0, 0.7),
+		0 2px 2px rgba(0, 0, 0, 0.9);
+
+	position: relative;
+
+	animation: bloodFlicker 4s infinite;
+}
+
+@keyframes bloodFlicker {
+
+	0%,
+	92%,
+	100% {
+		opacity: 1;
+		text-shadow:
+			0 0 3px rgba(139, 0, 0, 0.9),
+			0 0 8px rgba(80, 0, 0, 0.7),
+			0 2px 2px rgba(0, 0, 0, 0.9);
+	}
+
+	93% {
+		opacity: 0.65;
+		text-shadow:
+			0 0 8px rgba(139, 0, 0, 1),
+			0 0 15px rgba(100, 0, 0, 0.9);
+	}
+
+	94% {
+		opacity: 1;
+	}
+
+	96% {
+		opacity: 0.75;
+	}
+
+	97% {
+		opacity: 1;
+	}
+}
+
+.life-lost-menu h2::after {
+	content: "";
+
+	position: absolute;
+
+	left: 22%;
+	bottom: -8px;
+
+	width: 4px;
+	height: 10px;
+
+	background: #700000;
+
+	border-radius: 0 0 50% 50%;
+
+	box-shadow:
+		35px 2px 0 0 #700000,
+		82px -1px 0 0 #700000,
+		120px 3px 0 0 #700000;
+
+	opacity: 0.8;
+
+	animation: bloodDrops 3.5s ease-in-out infinite;
+}
+
+@keyframes bloodDrops {
+
+	0%,
+	100% {
+		transform: scaleY(0.7);
+		opacity: 0.65;
+	}
+
+	50% {
+		transform: scaleY(1.15);
+		opacity: 1;
+	}
+}
+
+
+.life-lost-hearts {
+
+	font-size: 25px;
+
+	letter-spacing: 5px;
+
+	margin-bottom: 22px;
+
+}
+
+
+.life-lost-text {
+
+	margin: 0;
+
+	font-size: 15px;
+
+	color: #aaa;
+
+}
+
+
+.life-lost-verity {
+
+	margin: 8px 0 25px;
+
+	font-size: 15px;
+
+	font-style: italic;
+
+	color: #ddd;
+
+}
+
+
+.restore-life-button {
+
+	width: 100%;
+
+	padding: 14px 18px;
+
+	border: none;
+
+	border-radius: 12px;
+
+	background: #242424;
+
+	color: #fff;
+
+	font-size: 15px;
+
+	font-weight: 600;
+
+	cursor: pointer;
+
+	transition:
+		transform 0.15s ease,
+		background 0.2s ease;
+}
+
+
+.restore-life-button span {
+
+	margin-right: 5px;
+
+}
+
+
+.restore-life-button small {
+
+	display: block;
+
+	margin-top: 4px;
+
+	font-size: 12px;
+
+	font-weight: 400;
+
+	color: #999;
+
+}
+
+
+.restore-life-button:hover {
+
+	background: #303030;
+
+	transform: translateY(-1px);
+
+}
+
+
+.restore-life-button:active {
+
+	transform: scale(0.98);
+
+}
+
+
+.continue-life-button {
+
+	margin-top: 16px;
+
+	padding: 8px 15px;
+
+	border: none;
+
+	background: transparent;
+
+	color: #888;
+
+	font-size: 14px;
+
+	cursor: pointer;
+
+	transition:
+		color 0.2s ease;
+}
+
+
+.continue-life-button:hover {
+
+	color: #fff;
+
+}
+
+
+.restore-life-button:disabled {
+
+	opacity: 0.5;
+
+	cursor: default;
+
+	transform: none;
+
+}
+
+.life-lost-hearts {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-bottom: 22px;
+}
+
+.life-lost-hearts img {
+	width: 32px;
+	height: 32px;
+	object-fit: contain;
+}
+
+.life-lost-tv {
+	display: block;
+
+	width: 90px;
+	height: 90px;
+
+	object-fit: contain;
+
+	margin: 0 auto 18px;
+
+	filter:
+		drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5));
+
+	animation: tvIdle 3s ease-in-out infinite;
+}
+
+@keyframes tvIdle {
+
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+
+	50% {
+		transform: translateY(-3px);
+	}
+}

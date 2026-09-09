@@ -10,8 +10,11 @@ let messages = []
 
 let currentDialogue = "start"
 
-let anger = 0
+let anger = 9
 let lives = 3
+
+let lifeRestoreAvailable = false
+let isLifeLostMenuOpen = false
 
 let dialogueData = {}
 
@@ -36,6 +39,207 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+function showLifeLostMenu() {
+
+	const menu =
+		document.getElementById("lifeLostMenu")
+
+	const hearts =
+		document.getElementById("lifeLostHearts")
+
+	if (!menu) {
+		return
+	}
+
+	isLifeLostMenuOpen = true
+	lifeRestoreAvailable = true
+
+	if (hearts) {
+
+		hearts.innerHTML = ""
+
+		for (let i = 0; i < 3; i++) {
+
+			const img =
+				document.createElement("img")
+
+			img.src =
+				i < lives
+					? "images/heart.png"
+					: "images/bad-heart.png"
+
+			img.alt = ""
+
+			hearts.appendChild(img)
+		}
+	}
+
+	menu.classList.add("active")
+}
+
+function hideLifeLostMenu() {
+
+	const menu =
+		document.getElementById(
+			"lifeLostMenu"
+		)
+
+	if (!menu) {
+		return
+	}
+
+
+	menu.classList.remove("active")
+
+	isLifeLostMenuOpen = false
+
+}
+
+function restoreLostLife() {
+
+	if (!lifeRestoreAvailable) {
+		return
+	}
+
+
+	if (lives >= 3) {
+
+		hideLifeLostMenu()
+
+		return
+
+	}
+
+
+	console.log(
+		"Запуск рекламы для восстановления жизни"
+	)
+
+
+	/*
+		ЗДЕСЬ ПОКА ИМИТИРУЕМ РЕКЛАМУ.
+
+		Позже сюда подключим реальную
+		рекламу Яндекс Игр.
+	*/
+
+	const button =
+		document.getElementById(
+			"restoreLifeButton"
+		)
+
+	if (button) {
+
+		button.disabled = true
+
+		button.innerHTML =
+			"📺 Загрузка рекламы..."
+
+	}
+
+
+	setTimeout(() => {
+
+		lives = Math.min(
+			lives + 1,
+			3
+		)
+
+
+		lifeRestoreAvailable = false
+
+
+		saveGame()
+
+		updateGameUI()
+
+
+		hideLifeLostMenu()
+
+
+		console.log(
+			"❤️ Жизнь восстановлена",
+			lives
+		)
+
+
+	}, 1500)
+
+}
+
+
+function continueAfterLifeLost() {
+
+	console.log(
+		"Игрок решил продолжить без восстановления"
+	)
+
+
+	lifeRestoreAvailable = false
+
+	hideLifeLostMenu()
+
+
+	// Если жизни закончились
+
+	if (lives <= 0) {
+
+		console.log(
+			"💀 GAME OVER"
+		)
+
+		showGameOver()
+
+		return
+
+	}
+
+
+	saveGame()
+
+	updateGameUI()
+
+}
+
+
+function showGameOver() {
+
+	console.log(
+		"Здесь будет экран GAME OVER"
+	)
+
+}
+
+
+const restoreLifeButton =
+	document.getElementById(
+		"restoreLifeButton"
+	)
+
+const continueAfterDeathButton =
+	document.getElementById(
+		"continueAfterDeathButton"
+	)
+
+
+if (restoreLifeButton) {
+
+	restoreLifeButton.addEventListener(
+		"click",
+		restoreLostLife
+	)
+
+}
+
+
+if (continueAfterDeathButton) {
+
+	continueAfterDeathButton.addEventListener(
+		"click",
+		continueAfterLifeLost
+	)
+
+}
 
 // ==============================
 // СОХРАНЕНИЕ
@@ -195,6 +399,10 @@ function renderDialogue() {
 // ==============================
 
 async function chooseDialogue(index) {
+
+	if (isWaitingForReply || isLifeLostMenuOpen) {
+		return
+	}
 
 	if (isWaitingForReply) {
 		return
@@ -577,17 +785,23 @@ function handleAngerMax() {
 		"🔥 ЗЛОСТЬ ДОСТИГЛА МАКСИМУМА"
 	)
 
+
 	if (lives <= 0) {
 
 		console.log(
 			"Жизни закончились"
 		)
 
+		showLifeLostMenu()
+
 		return
+
 	}
 
 
-	// Снимаем сердце
+	// ==========================
+	// СНИМАЕМ СЕРДЦЕ
+	// ==========================
 
 	lives--
 
@@ -602,7 +816,9 @@ function handleAngerMax() {
 	)
 
 
-	// После атаки злость сбрасывается
+	// ==========================
+	// СБРАСЫВАЕМ ЗЛОСТЬ
+	// ==========================
 
 	anger = 0
 
@@ -612,9 +828,22 @@ function handleAngerMax() {
 	updateGameUI()
 
 
-	// Скример
+	// ==========================
+	// СКРИМЕР
+	// ==========================
 
-	verityScreamer()
+	triggerAngerScreamer()
+
+
+	// ==========================
+	// МЕНЮ ПОТЕРИ ЖИЗНИ
+	// ==========================
+
+	setTimeout(() => {
+
+		showLifeLostMenu()
+
+	}, 750)
 
 }
 
@@ -794,7 +1023,7 @@ function processAngerHorror() {
 		// На максимальной злости
 		// скример происходит сразу
 
-		handleAngerMax()
+		return
 
 	}
 
@@ -1114,10 +1343,9 @@ function updateGameUI() {
 	if (relationshipPoint) {
 
 		const percent =
-			((anger + MAX_LOVE) /
+			((MAX_ANGER - anger) /
 				(MAX_LOVE + MAX_ANGER)) *
 			100
-
 
 		relationshipPoint.style.left =
 			`${percent}%`
