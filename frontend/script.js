@@ -1,3 +1,4 @@
+
 console.log("VERITY GAME ЗАПУЩЕН")
 
 // ==============================
@@ -16,22 +17,38 @@ let dialogueData = {}
 
 let isWaitingForReply = false
 
+// Защита от слишком частых эффектов
+let horrorEffectCooldown = false
+let screamerCooldown = false
+
+// ==============================
+// НАСТРОЙКИ
+// ==============================
+
+const MAX_ANGER = 10
+const MAX_LOVE = 30
+
+// ==============================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ==============================
+
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
+
 
 // ==============================
 // СОХРАНЕНИЕ
 // ==============================
 
 function saveGame() {
+
 	const gameData = {
 		inventory: inventory,
 		messages: messages,
 		currentDialogue: currentDialogue,
 		anger: anger,
-		lives: lives,
-		trust: trust
+		lives: lives
 	}
 
 	localStorage.setItem(
@@ -42,26 +59,41 @@ function saveGame() {
 
 
 function loadGame() {
-	const savedGame = localStorage.getItem("verityGame")
+
+	const savedGame =
+		localStorage.getItem("verityGame")
 
 	if (!savedGame) {
 		return
 	}
 
 	try {
-		const gameData = JSON.parse(savedGame)
 
-		inventory = gameData.inventory ?? {}
-		messages = gameData.messages ?? []
+		const gameData =
+			JSON.parse(savedGame)
 
-		currentDialogue = gameData.currentDialogue ?? "start"
+		inventory =
+			gameData.inventory ?? {}
 
-		anger = gameData.anger ?? 0
-		lives = gameData.lives ?? 3
-		trust = gameData.trust ?? 0
+		messages =
+			gameData.messages ?? []
+
+		currentDialogue =
+			gameData.currentDialogue ?? "start"
+
+		anger =
+			gameData.anger ?? 0
+
+		lives =
+			gameData.lives ?? 3
 
 	} catch (error) {
-		console.error("Ошибка загрузки сохранения:", error)
+
+		console.error(
+			"Ошибка загрузки сохранения:",
+			error
+		)
+
 	}
 }
 
@@ -71,46 +103,68 @@ function loadGame() {
 // ==============================
 
 async function loadDialogue() {
+
 	try {
-		const response = await fetch("data/dialogue.json")
+
+		const response =
+			await fetch("data/dialogue.json")
 
 		if (!response.ok) {
-			throw new Error("Не удалось загрузить dialogue.json")
+
+			throw new Error(
+				"Не удалось загрузить dialogue.json"
+			)
+
 		}
 
-		dialogueData = await response.json()
+		dialogueData =
+			await response.json()
 
 		if (
 			messages.length === 0 &&
 			dialogueData[currentDialogue]?.verity
 		) {
+
 			addMessage(
 				"verity",
 				dialogueData[currentDialogue].verity
 			)
+
 		}
 
 		renderDialogue()
 
 	} catch (error) {
-		console.error("Ошибка загрузки диалога:", error)
+
+		console.error(
+			"Ошибка загрузки диалога:",
+			error
+		)
+
 	}
 }
 
 
 function renderDialogue() {
-	const dialogue = dialogueData[currentDialogue]
+
+	const dialogue =
+		dialogueData[currentDialogue]
 
 	if (!dialogue) {
+
 		console.error(
 			"Диалог не найден:",
 			currentDialogue
 		)
+
 		return
 	}
 
-	const choice1 = document.getElementById("choice1")
-	const choice2 = document.getElementById("choice2")
+	const choice1 =
+		document.getElementById("choice1")
+
+	const choice2 =
+		document.getElementById("choice2")
 
 	if (!choice1 || !choice2) {
 		return
@@ -132,10 +186,13 @@ function renderDialogue() {
 			? "block"
 			: "none"
 
-
 	updateGameUI()
 }
 
+
+// ==============================
+// ВЫБОР ДИАЛОГА
+// ==============================
 
 async function chooseDialogue(index) {
 
@@ -143,23 +200,31 @@ async function chooseDialogue(index) {
 		return
 	}
 
-	const dialogue = dialogueData[currentDialogue]
+	const dialogue =
+		dialogueData[currentDialogue]
 
 	if (!dialogue) {
 		return
 	}
 
-	const choice = dialogue.choices[index]
+	const choice =
+		dialogue.choices[index]
 
 	if (!choice) {
 		return
 	}
 
-	// Блокируем повторные нажатия
+	// ==========================
+	// БЛОКИРУЕМ КНОПКИ
+	// ==========================
+
 	isWaitingForReply = true
 
-	const choice1 = document.getElementById("choice1")
-	const choice2 = document.getElementById("choice2")
+	const choice1 =
+		document.getElementById("choice1")
+
+	const choice2 =
+		document.getElementById("choice2")
 
 	if (choice1) {
 		choice1.disabled = true
@@ -169,48 +234,106 @@ async function chooseDialogue(index) {
 		choice2.disabled = true
 	}
 
-	// Сообщение игрока
-	addMessage("user", choice.text)
 
-	// Изменяем отношение
-	changeRelationship(choice.anger ?? 0)
+	// ==========================
+	// СООБЩЕНИЕ ИГРОКА
+	// ==========================
 
-	trust += choice.trust ?? 0
+	addMessage(
+		"user",
+		choice.text
+	)
 
-	// Переходим к следующему диалогу
-	currentDialogue = choice.next
+
+	// ==========================
+	// ИЗМЕНЕНИЕ ОТНОШЕНИЙ
+	// ==========================
+
+	changeRelationship(
+		choice.anger ?? 0
+	)
 
 
-	// Задержка перед ответом Верити
+	console.log(
+		"После выбора:",
+		{
+			anger: anger,
+			love: getLove(),
+			relationship: getRelationship().type,
+			horror: getHorrorLevel(),
+			lives: lives
+		}
+	)
 
-	// Верити начинает печатать
+
+	// ==========================
+	// ХОРРОР ПОСЛЕ ВЫБОРА
+	// ==========================
+
+	processAngerHorror()
+
+
+	// ==========================
+	// ПЕРЕХОД
+	// ==========================
+
+	currentDialogue =
+		choice.next
+
+
+	// ==========================
+	// ВЕРИТИ ПЕЧАТАЕТ
+	// ==========================
+
 	showTyping()
 
-	// Задержка перед ответом
+
 	const replyDelay =
 		Math.random() * 700 + 700
 
 	await sleep(replyDelay)
 
-	// Убираем "печатает..."
+
 	hideTyping()
 
-	processTrustHorror()
+
+	// ==========================
+	// ЕЩЁ ОДНА ПРОВЕРКА ХОРРОРА
+	// ==========================
+
+	processAngerHorror()
+
 
 	const nextDialogue =
 		dialogueData[currentDialogue]
 
-	// Ответ Верити
+
 	if (nextDialogue?.verity) {
-		addMessage("verity", nextDialogue.verity)
+
+		addMessage(
+			"verity",
+			nextDialogue.verity
+		)
+
 	}
 
+
+	// ==========================
+	// ПРОВЕРКА МАКСИМАЛЬНОЙ ЗЛОСТИ
+	// ==========================
+
 	checkRelationship()
+
+
 	saveGame()
+
 	renderDialogue()
 
 
-	// Разблокируем кнопки
+	// ==========================
+	// РАЗБЛОКИРУЕМ КНОПКИ
+	// ==========================
+
 	isWaitingForReply = false
 
 	if (choice1) {
@@ -220,13 +343,16 @@ async function chooseDialogue(index) {
 	if (choice2) {
 		choice2.disabled = false
 	}
+
 }
 
 
 // ==============================
 // СООБЩЕНИЯ
 // ==============================
+
 function showTyping() {
+
 	const messagesContainer =
 		document.getElementById("messages")
 
@@ -234,7 +360,8 @@ function showTyping() {
 		return
 	}
 
-	const typing = document.createElement("div")
+	const typing =
+		document.createElement("div")
 
 	typing.classList.add(
 		"message",
@@ -242,7 +369,8 @@ function showTyping() {
 		"typing-message"
 	)
 
-	typing.id = "verityTyping"
+	typing.id =
+		"verityTyping"
 
 	typing.innerHTML = `
 		<div class="typing">
@@ -260,8 +388,11 @@ function showTyping() {
 
 
 function hideTyping() {
+
 	const typing =
-		document.getElementById("verityTyping")
+		document.getElementById(
+			"verityTyping"
+		)
 
 	if (typing) {
 		typing.remove()
@@ -293,7 +424,8 @@ function addMessage(sender, text) {
 			: "verity"
 	)
 
-	messageElement.textContent = text
+	messageElement.textContent =
+		text
 
 	messagesContainer.appendChild(
 		messageElement
@@ -305,6 +437,7 @@ function addMessage(sender, text) {
 
 
 function showVerityMessage(text) {
+
 	addMessage(
 		"verity",
 		text
@@ -313,6 +446,7 @@ function showVerityMessage(text) {
 
 
 function renderMessages() {
+
 	const messagesContainer =
 		document.getElementById("messages")
 
@@ -351,24 +485,15 @@ function renderMessages() {
 // ОТНОШЕНИЯ
 // ==============================
 
-const MAX_ANGER = 10
-const MAX_LOVE = 30
-
-let trust = 5
-
-const TRUST_HORROR = {
-	calm: 10,
-	suspicious: 5,
-	unstable: 1,
-	danger: 0
-}
-
 function getRelationship() {
+
 	if (anger < 0) {
+
 		return {
 			type: "love",
 			value: Math.abs(anger)
 		}
+
 	}
 
 	return {
@@ -377,205 +502,754 @@ function getRelationship() {
 	}
 }
 
-function checkRelationship() {
-	const relationship = getRelationship()
 
-	if (
-		relationship.type === "anger" &&
-		relationship.value >= MAX_ANGER
-	) {
-		handleAngerMax()
+function getLove() {
+
+	if (anger < 0) {
+		return Math.abs(anger)
 	}
 
-	if (
-		relationship.type === "love" &&
-		relationship.value >= MAX_LOVE
-	) {
-		handleLoveMax()
-	}
+	return 0
 }
 
-function handleAngerMax() {
-	console.log("ЗЛОСТЬ ДОСТИГЛА МАКСИМУМА")
-
-	if (lives <= 0) {
-		console.log("Жизни закончились")
-		return
-	}
-
-	lives--
-
-	// После скримера отношения возвращаются в нейтральное состояние
-	anger = 0
-
-	saveGame()
-	updateGameUI()
-
-	verityScreamer()
-}
-
-function handleLoveMax() {
-	console.log("❤️ МАКСИМАЛЬНОЕ СЧАСТЬЕ")
-	console.log("УРОВЕНЬ ПРОЙДЕН")
-
-	// Здесь позже сделаем настоящий финал
-}
-
-function getTrustHorrorLevel() {
-	if (trust >= 10) return "calm"
-	if (trust >= 5) return "suspicious"
-	if (trust >= 1) return "unstable"
-	return "danger"
-}
-
-
-// ==============================
-// ИЗМЕНЕНИЕ ОТНОШЕНИЙ
-// ==============================
 
 function changeRelationship(value) {
 
 	anger += value
 
-	// Не даём значению выйти за пределы -10 / +10
-	anger = Math.max(
-		-MAX_LOVE,
-		Math.min(MAX_ANGER, anger)
-	)
+	anger =
+		Math.max(
+			-MAX_LOVE,
+			Math.min(
+				MAX_ANGER,
+				anger
+			)
+		)
 
-	console.log("Отношение:", anger)
+	console.log(
+		"ОТНОШЕНИЯ:",
+		anger
+	)
 
 	updateGameUI()
 }
 
-function processTrustHorror() {
 
-	const level =
-		getTrustHorrorLevel()
+function checkRelationship() {
 
-	if (level === "calm") {
+	const relationship =
+		getRelationship()
+
+
+	// ==========================
+	// МАКСИМАЛЬНАЯ ЗЛОСТЬ
+	// ==========================
+
+	if (
+		relationship.type === "anger" &&
+		relationship.value >= MAX_ANGER
+	) {
+
+		handleAngerMax()
+
+	}
+
+
+	// ==========================
+	// МАКСИМАЛЬНАЯ ЛЮБОВЬ
+	// ==========================
+
+	if (
+		relationship.type === "love" &&
+		relationship.value >= MAX_LOVE
+	) {
+
+		handleLoveMax()
+
+	}
+
+}
+
+
+function handleAngerMax() {
+
+	console.log(
+		"🔥 ЗЛОСТЬ ДОСТИГЛА МАКСИМУМА"
+	)
+
+	if (lives <= 0) {
+
+		console.log(
+			"Жизни закончились"
+		)
+
 		return
 	}
 
-	if (level === "suspicious") {
 
-		if (Math.random() < 0.15) {
-			triggerTrustGlitch()
-		}
+	// Снимаем сердце
 
-		return
-	}
+	lives--
 
-	if (level === "unstable") {
 
-		if (Math.random() < 0.35) {
-			triggerRandomTrustEffect()
-		}
+	console.log(
+		"❤️ ПОТЕРЯНА ЖИЗНЬ"
+	)
 
-		return
-	}
+	console.log(
+		"Осталось жизней:",
+		lives
+	)
 
-	// trust <= 0
 
-	const roll = Math.random()
+	// После атаки злость сбрасывается
 
-	if (roll < 0.08) {
+	anger = 0
 
-		triggerTrustScreamer()
 
-	} else if (roll < 0.60) {
+	saveGame()
 
-		triggerRandomTrustEffect()
-	}
+	updateGameUI()
+
+
+	// Скример
+
+	verityScreamer()
+
 }
 
-function triggerRandomTrustEffect() {
-	const effects = [
-		triggerTrustGlitch,
-		triggerTrustFlicker,
-		triggerTrustAvatar,
-		triggerTrustStatus
-	]
 
-	const effect = effects[Math.floor(Math.random() * effects.length)]
+function handleLoveMax() {
 
-	effect()
-}
+	console.log(
+		"❤️ МАКСИМАЛЬНОЕ СЧАСТЬЕ"
+	)
 
-function triggerTrustGlitch() {
+	console.log(
+		"УРОВЕНЬ ПРОЙДЕН"
+	)
 
-	const phoneScreen =
-		document.querySelector(".phone-screen")
-
-	if (!phoneScreen) return
-
-	phoneScreen.classList.remove("glitch")
-
-	void phoneScreen.offsetWidth
-
-	phoneScreen.classList.add("glitch")
-
-	setTimeout(() => {
-
-		phoneScreen.classList.remove("glitch")
-
-	}, 200 + Math.random() * 400)
-}
-
-function triggerTrustFlicker() {
-	const screen = document.querySelector(".phone-screen")
-
-	if (!screen) return
-
-	screen.classList.add("trust-flicker")
-
-	setTimeout(() => {
-		screen.classList.remove("trust-flicker")
-	}, 300 + Math.random() * 500)
 }
 
 
 // ==============================
-// UI ХАРАКТЕРИСТИК
+// УРОВЕНЬ ХОРРОРА
+// ==============================
+//
+// Теперь всё зависит только от anger.
+//
+// anger < 0
+//     Любовь
+//
+// anger 0
+//     Нейтрально
+//
+// anger 1-3
+//     Лёгкий хоррор
+//
+// anger 4-6
+//     Средний хоррор
+//
+// anger 7-9
+//     Сильный хоррор
+//
+// anger 10
+//     Скример + потеря жизни
+// ==============================
+
+function getHorrorLevel() {
+
+	if (anger < 0) {
+		return "love"
+	}
+
+	if (anger === 0) {
+		return "neutral"
+	}
+
+	if (anger <= 3) {
+		return "low"
+	}
+
+	if (anger <= 6) {
+		return "medium"
+	}
+
+	if (anger <= 9) {
+		return "high"
+	}
+
+	return "critical"
+}
+
+
+// ==============================
+// ОСНОВНАЯ СИСТЕМА ХОРРОРА
+// ==============================
+
+function processAngerHorror() {
+
+	const level =
+		getHorrorLevel()
+
+
+	console.log(
+		"%cHORROR CHECK",
+		"color:red;font-weight:bold",
+		{
+			anger: anger,
+			love: getLove(),
+			level: level,
+			lives: lives
+		}
+	)
+
+
+	// ==========================
+	// ЛЮБОВЬ
+	// ==========================
+
+	if (level === "love") {
+
+		return
+	}
+
+
+	// ==========================
+	// НЕЙТРАЛЬНО
+	// ==========================
+
+	if (level === "neutral") {
+
+		// Очень редко
+
+		if (Math.random() < 0.05) {
+			triggerRandomAngerEffect()
+		}
+
+		return
+	}
+
+
+	// ==========================
+	// ЗЛОСТЬ 1-3
+	// ==========================
+
+	if (level === "low") {
+
+		if (Math.random() < 0.20) {
+			triggerRandomAngerEffect()
+		}
+
+		return
+	}
+
+
+	// ==========================
+	// ЗЛОСТЬ 4-6
+	// ==========================
+
+	if (level === "medium") {
+
+		if (Math.random() < 0.40) {
+			triggerRandomAngerEffect()
+		}
+
+		return
+	}
+
+
+	// ==========================
+	// ЗЛОСТЬ 7-9
+	// ==========================
+
+	if (level === "high") {
+
+		if (Math.random() < 0.70) {
+			triggerRandomAngerEffect()
+		}
+
+
+		// Иногда скример
+
+		if (
+			Math.random() < 0.10 &&
+			!screamerCooldown
+		) {
+
+			triggerAngerScreamer()
+
+		}
+
+		return
+	}
+
+
+	// ==========================
+	// ЗЛОСТЬ 10
+	// ==========================
+
+	if (level === "critical") {
+
+		// На максимальной злости
+		// скример происходит сразу
+
+		handleAngerMax()
+
+	}
+
+}
+
+
+// ==============================
+// СЛУЧАЙНЫЙ ЭФФЕКТ
+// ==============================
+
+function triggerRandomAngerEffect() {
+
+	if (horrorEffectCooldown) {
+		return
+	}
+
+
+	const effects = [
+
+		triggerAngerGlitch,
+		triggerAngerFlicker,
+		triggerAngerAvatar,
+		triggerAngerStatus
+
+	]
+
+
+	const effect =
+		effects[
+		Math.floor(
+			Math.random() *
+			effects.length
+		)
+		]
+
+
+	effect()
+
+
+	horrorEffectCooldown = true
+
+
+	setTimeout(() => {
+
+		horrorEffectCooldown = false
+
+	}, 700)
+
+}
+
+
+// ==============================
+// GLITCH
+// ==============================
+
+function triggerAngerGlitch() {
+
+	console.log(
+		"HORROR: GLITCH",
+		"anger:",
+		anger
+	)
+
+
+	const phoneScreen =
+		document.querySelector(
+			".phone-screen"
+		)
+
+	if (!phoneScreen) {
+		return
+	}
+
+
+	phoneScreen.classList.remove(
+		"glitch"
+	)
+
+	void phoneScreen.offsetWidth
+
+	phoneScreen.classList.add(
+		"glitch"
+	)
+
+
+	setTimeout(() => {
+
+		phoneScreen.classList.remove(
+			"glitch"
+		)
+
+	}, 250 + Math.random() * 500)
+
+}
+
+
+// ==============================
+// FLICKER
+// ==============================
+
+function triggerAngerFlicker() {
+
+	console.log(
+		"HORROR: FLICKER",
+		"anger:",
+		anger
+	)
+
+
+	const phoneScreen =
+		document.querySelector(
+			".phone-screen"
+		)
+
+	if (!phoneScreen) {
+		return
+	}
+
+
+	phoneScreen.classList.add(
+		"flicker"
+	)
+
+
+	setTimeout(() => {
+
+		phoneScreen.classList.remove(
+			"flicker"
+		)
+
+	}, 80 + Math.random() * 180)
+
+}
+
+
+// ==============================
+// AVATAR
+// ==============================
+
+function triggerAngerAvatar() {
+
+	console.log(
+		"HORROR: AVATAR",
+		"anger:",
+		anger
+	)
+
+
+	const avatar =
+		document.querySelector(
+			".chat-header .avatar img"
+		)
+
+	if (!avatar) {
+		return
+	}
+
+
+	const normalAvatar =
+		"images/verity.png"
+
+	const scaryAvatar =
+		"images/verity-v2.png"
+
+
+	avatar.src =
+		scaryAvatar
+
+
+	const duration =
+		300 +
+		Math.random() * 1700
+
+
+	setTimeout(() => {
+
+		avatar.src =
+			normalAvatar
+
+	}, duration)
+
+}
+
+
+// ==============================
+// STATUS
+// ==============================
+
+function triggerAngerStatus() {
+
+	console.log(
+		"HORROR: STATUS",
+		"anger:",
+		anger
+	)
+
+
+	const status =
+		document.querySelector(
+			".chat-status"
+		)
+
+	if (!status) {
+		return
+	}
+
+
+	const originalText =
+		status.textContent
+
+
+	status.textContent =
+		"не в сети"
+
+	status.classList.add(
+		"offline"
+	)
+
+
+	setTimeout(() => {
+
+		status.textContent =
+			originalText || "в сети"
+
+		status.classList.remove(
+			"offline"
+		)
+
+	}, 1000 + Math.random() * 2500)
+
+}
+
+
+// ==============================
+// СКРИМЕР
+// ==============================
+
+function triggerAngerScreamer() {
+
+	if (screamerCooldown) {
+		return
+	}
+
+
+	console.log(
+		"HORROR: SCREAMER",
+		"anger:",
+		anger
+	)
+
+
+	const screamer =
+		document.getElementById(
+			"verityScreamer"
+		)
+
+	if (!screamer) {
+		return
+	}
+
+
+	screamerCooldown = true
+
+
+	screamer.classList.remove(
+		"active"
+	)
+
+	void screamer.offsetWidth
+
+	screamer.classList.add(
+		"active"
+	)
+
+
+	setTimeout(() => {
+
+		screamer.classList.remove(
+			"active"
+		)
+
+	}, 700)
+
+
+	// Защита от скримеров подряд
+
+	setTimeout(() => {
+
+		screamerCooldown = false
+
+	}, 4000)
+
+}
+
+
+// ==============================
+// UI
 // ==============================
 
 function updateGameUI() {
 
 	const relationshipPoint =
-		document.getElementById("relationshipPoint")
+		document.getElementById(
+			"relationshipPoint"
+		)
 
 	const livesContainer =
-		document.getElementById("livesContainer")
+		document.getElementById(
+			"livesContainer"
+		)
 
-	// Позиция точки на шкале отношений
+
+	// ==========================
+	// ТОЧКА ОТНОШЕНИЙ
+	// ==========================
+
 	if (relationshipPoint) {
-		const percent = ((anger + 30) / 40) * 100
-		relationshipPoint.style.left = `${percent}%`
+
+		const percent =
+			((anger + MAX_LOVE) /
+				(MAX_LOVE + MAX_ANGER)) *
+			100
+
+
+		relationshipPoint.style.left =
+			`${percent}%`
+
 	}
 
-	// Сердца жизней
+
+	// ==========================
+	// СЕРДЦА
+	// ==========================
+
 	if (livesContainer) {
 
 		livesContainer.innerHTML = ""
 
-		for (let i = 0; i < 3; i++) {
+
+		for (
+			let i = 0;
+			i < 3;
+			i++
+		) {
 
 			const heart =
 				document.createElement("img")
 
-			heart.classList.add("life-heart")
+
+			heart.classList.add(
+				"life-heart"
+			)
+
 
 			if (i < lives) {
-				heart.src = "images/heart.png"
+
+				heart.src =
+					"images/heart.png"
+
 			} else {
-				heart.src = "images/bad-heart.png"
+
+				heart.src =
+					"images/bad-heart.png"
+
 			}
+
 
 			heart.alt = ""
 
-			livesContainer.appendChild(heart)
+
+			livesContainer.appendChild(
+				heart
+			)
+
 		}
+
 	}
+
+
+	updateDebugPanel()
+
+}
+
+
+// ==============================
+// DEBUG ПАНЕЛЬ
+// ==============================
+
+function updateDebugPanel() {
+
+	const debugAnger =
+		document.getElementById(
+			"debugAnger"
+		)
+
+	const debugLove =
+		document.getElementById(
+			"debugLove"
+		)
+
+	const debugLives =
+		document.getElementById(
+			"debugLives"
+		)
+
+	const debugHorror =
+		document.getElementById(
+			"debugHorror"
+		)
+
+	const debugDialogue =
+		document.getElementById(
+			"debugDialogue"
+		)
+
+
+	if (debugAnger) {
+
+		debugAnger.textContent =
+			anger
+
+	}
+
+
+	if (debugLove) {
+
+		debugLove.textContent =
+			getLove()
+
+	}
+
+
+	if (debugLives) {
+
+		debugLives.textContent =
+			lives
+
+	}
+
+
+	if (debugHorror) {
+
+		debugHorror.textContent =
+			getHorrorLevel()
+
+	}
+
+
+	if (debugDialogue) {
+
+		debugDialogue.textContent =
+			currentDialogue
+
+	}
+
 }
 
 
@@ -584,16 +1258,24 @@ function updateGameUI() {
 // ==============================
 
 const inventoryButton =
-	document.getElementById("inventoryButton")
+	document.getElementById(
+		"inventoryButton"
+	)
 
 const inventoryModal =
-	document.getElementById("inventoryModal")
+	document.getElementById(
+		"inventoryModal"
+	)
 
 const closeInventory =
-	document.getElementById("closeInventory")
+	document.getElementById(
+		"closeInventory"
+	)
 
 const inventoryGrid =
-	document.getElementById("inventoryGrid")
+	document.getElementById(
+		"inventoryGrid"
+	)
 
 
 function openInventory() {
@@ -602,10 +1284,13 @@ function openInventory() {
 		return
 	}
 
+
 	inventoryModal.style.display =
 		"flex"
 
+
 	renderInventory()
+
 }
 
 
@@ -615,24 +1300,30 @@ function closeInventoryWindow() {
 		return
 	}
 
+
 	inventoryModal.style.display =
 		"none"
+
 }
 
 
 if (inventoryButton) {
+
 	inventoryButton.addEventListener(
 		"click",
 		openInventory
 	)
+
 }
 
 
 if (closeInventory) {
+
 	closeInventory.addEventListener(
 		"click",
 		closeInventoryWindow
 	)
+
 }
 
 
@@ -646,10 +1337,14 @@ if (inventoryModal) {
 				event.target ===
 				inventoryModal
 			) {
+
 				closeInventoryWindow()
+
 			}
+
 		}
 	)
+
 }
 
 
@@ -663,7 +1358,8 @@ const items = [
 		id: "coin",
 		name: "Старая монета",
 		image: "images/old_coin.png",
-		description: "Странная старая монета.",
+		description:
+			"Странная старая монета.",
 		rarity: "common",
 		chance: 50
 	},
@@ -672,7 +1368,8 @@ const items = [
 		id: "key",
 		name: "Маленький ключ",
 		image: "images/key.webp",
-		description: "Неизвестно, что он открывает.",
+		description:
+			"Неизвестно, что он открывает.",
 		rarity: "uncommon",
 		chance: 30
 	},
@@ -681,7 +1378,8 @@ const items = [
 		id: "cassette",
 		name: "Кассета",
 		image: "images/cassette.png",
-		description: "Верити почему-то не хочет, чтобы ты её включал.",
+		description:
+			"Верити почему-то не хочет, чтобы ты её включал.",
 		rarity: "rare",
 		chance: 15
 	},
@@ -690,7 +1388,8 @@ const items = [
 		id: "glass",
 		name: "Осколок зеркала",
 		image: "images/glass.png",
-		description: "Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
+		description:
+			"Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
 		rarity: "epic",
 		chance: 8
 	},
@@ -699,7 +1398,8 @@ const items = [
 		id: "eye",
 		name: "Чёрный глаз",
 		image: "images/eye.png",
-		description: "Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
+		description:
+			"Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
 		rarity: "mythic",
 		chance: 4
 	},
@@ -708,7 +1408,8 @@ const items = [
 		id: "note",
 		name: "Старая записка",
 		image: "images/note.webp",
-		description: 'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
+		description:
+			'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
 		rarity: "legendary",
 		chance: 2
 	}
@@ -723,22 +1424,33 @@ function getRandomItem() {
 
 	let currentChance = 0
 
+
 	for (const item of items) {
 
 		currentChance +=
 			item.chance
 
+
 		if (
 			random <
 			currentChance
 		) {
+
 			return item
+
 		}
+
 	}
 
+
 	return items[0]
+
 }
 
+
+// ==============================
+// РЕНДЕР ИНВЕНТАРЯ
+// ==============================
 
 function renderInventory() {
 
@@ -746,10 +1458,13 @@ function renderInventory() {
 		return
 	}
 
+
 	inventoryGrid.innerHTML = ""
+
 
 	const inventoryItems =
 		Object.keys(inventory)
+
 
 	for (
 		let i = 0;
@@ -760,12 +1475,15 @@ function renderInventory() {
 		const slot =
 			document.createElement("div")
 
+
 		slot.classList.add(
 			"inventory-slot"
 		)
 
+
 		const itemId =
 			inventoryItems[i]
+
 
 		if (itemId) {
 
@@ -775,45 +1493,62 @@ function renderInventory() {
 						item.id === itemId
 				)
 
+
 			if (item) {
 
 				const image =
 					document.createElement("img")
 
-				image.src = item.image
-				image.alt = item.name
+
+				image.src =
+					item.image
+
+				image.alt =
+					item.name
+
 
 				image.classList.add(
 					"inventory-item"
 				)
 
-				slot.appendChild(image)
+
+				slot.appendChild(
+					image
+				)
 
 
 				const amount =
 					document.createElement("div")
 
+
 				amount.classList.add(
 					"item-amount"
 				)
+
 
 				amount.textContent =
 					inventory[itemId] > 1
 						? inventory[itemId]
 						: ""
 
-				slot.appendChild(amount)
+
+				slot.appendChild(
+					amount
+				)
 
 
 				const tooltip =
 					document.createElement("div")
 
+
 				tooltip.classList.add(
 					"item-tooltip"
 				)
 
+
 				tooltip.textContent =
 					item.name
+
 
 				slot.appendChild(
 					tooltip
@@ -824,15 +1559,24 @@ function renderInventory() {
 					"click",
 					() => {
 
-						document.getElementById(
-							"itemName"
-						).textContent =
-							item.name
+						const itemName =
+							document.getElementById(
+								"itemName"
+							)
+
+						if (itemName) {
+
+							itemName.textContent =
+								item.name
+
+						}
+
 
 						const rarityElement =
 							document.getElementById(
 								"itemRarity"
 							)
+
 
 						const rarityNames = {
 
@@ -845,24 +1589,45 @@ function renderInventory() {
 
 						}
 
-						rarityElement.textContent =
-							rarityNames[item.rarity]
 
-						rarityElement.className =
-							`item-rarity ${item.rarity}`
+						if (rarityElement) {
+
+							rarityElement.textContent =
+								rarityNames[item.rarity]
+
+							rarityElement.className =
+								`item-rarity ${item.rarity}`
+
+						}
 
 
-						document.getElementById(
-							"itemDescription"
-						).textContent =
-							item.description
+						const description =
+							document.getElementById(
+								"itemDescription"
+							)
+
+
+						if (description) {
+
+							description.textContent =
+								item.description
+
+						}
+
 					}
 				)
+
 			}
+
 		}
 
-		inventoryGrid.appendChild(slot)
+
+		inventoryGrid.appendChild(
+			slot
+		)
+
 	}
+
 }
 
 
@@ -875,8 +1640,10 @@ function rewardItemAd() {
 	const usedSlots =
 		Object.keys(inventory).length
 
+
 	const randomItem =
 		getRandomItem()
+
 
 	if (
 		usedSlots >= 15 &&
@@ -888,18 +1655,24 @@ function rewardItemAd() {
 		)
 
 		return
+
 	}
+
 
 	inventory[randomItem.id] =
 		(inventory[randomItem.id] || 0) + 1
 
+
 	saveGame()
+
 
 	showItemNotification(
 		`Ты получил: ${randomItem.name}`
 	)
 
+
 	openInventory()
+
 
 	setTimeout(() => {
 
@@ -908,6 +1681,7 @@ function rewardItemAd() {
 		)
 
 	}, 100)
+
 }
 
 
@@ -918,21 +1692,31 @@ function showItemNotification(text) {
 			"itemNotification"
 		)
 
+
 	const notificationItem =
 		document.getElementById(
 			"notificationItem"
 		)
 
-	if (!notification || !notificationItem) {
+
+	if (
+		!notification ||
+		!notificationItem
+	) {
+
 		return
+
 	}
+
 
 	notificationItem.textContent =
 		text
 
+
 	notification.classList.add(
 		"show"
 	)
+
 
 	setTimeout(() => {
 
@@ -941,6 +1725,7 @@ function showItemNotification(text) {
 		)
 
 	}, 2500)
+
 }
 
 
@@ -951,16 +1736,20 @@ function highlightItem(index) {
 			".inventory-slot"
 		)
 
+
 	const slot =
 		slots[index]
+
 
 	if (!slot) {
 		return
 	}
 
+
 	slot.classList.add(
 		"new-item"
 	)
+
 
 	setTimeout(() => {
 
@@ -969,6 +1758,7 @@ function highlightItem(index) {
 		)
 
 	}, 3000)
+
 }
 
 
@@ -977,12 +1767,14 @@ const itemAdButton =
 		"itemAdButton"
 	)
 
+
 if (itemAdButton) {
 
 	itemAdButton.addEventListener(
 		"click",
 		rewardItemAd
 	)
+
 }
 
 
@@ -994,6 +1786,7 @@ const skinButton =
 	document.getElementById(
 		"skinButton"
 	)
+
 
 if (skinButton) {
 
@@ -1007,11 +1800,24 @@ if (skinButton) {
 
 		}
 	)
+
 }
 
 
 // ==============================
-// ЭФФЕКТЫ ЭКРАНА
+// ФОНОВЫЕ ЭФФЕКТЫ
+// ==============================
+//
+// Теперь их частота зависит
+// от anger.
+//
+// Чем выше anger,
+// тем меньше задержка.
+// ==============================
+
+
+// ==============================
+// ФОНОВОЕ МЕРЦАНИЕ
 // ==============================
 
 function screenFlicker() {
@@ -1025,9 +1831,11 @@ function screenFlicker() {
 		return
 	}
 
+
 	phoneScreen.classList.add(
 		"flicker"
 	)
+
 
 	setTimeout(() => {
 
@@ -1035,39 +1843,80 @@ function screenFlicker() {
 			"flicker"
 		)
 
-	}, 80)
-}
+	}, 80 + Math.random() * 150)
 
-function triggerTrustScreamer() {
-	const screamer = document.getElementById("verityScreamer")
-
-	if (!screamer) return
-
-	screamer.classList.remove("active")
-
-	void screamer.offsetWidth
-
-	screamer.classList.add("active")
-
-	setTimeout(() => {
-		screamer.classList.remove("active")
-	}, 700)
 }
 
 
 function randomFlicker() {
 
+	let minDelay
+	let maxDelay
+
+
+	if (anger < 0) {
+
+		// Любовь
+
+		minDelay = 12000
+		maxDelay = 25000
+
+	} else if (anger === 0) {
+
+		// Нейтрально
+
+		minDelay = 9000
+		maxDelay = 18000
+
+	} else if (anger <= 3) {
+
+		// Лёгкая злость
+
+		minDelay = 6000
+		maxDelay = 13000
+
+	} else if (anger <= 6) {
+
+		// Средняя
+
+		minDelay = 4000
+		maxDelay = 9000
+
+	} else {
+
+		// Сильная
+
+		minDelay = 1800
+		maxDelay = 5000
+
+	}
+
+
 	const delay =
-		Math.random() * 10000 + 5000
+		Math.random() *
+		(maxDelay - minDelay) +
+		minDelay
+
 
 	setTimeout(() => {
 
-		screenFlicker()
+		// Проверяем ещё раз,
+		// потому что anger мог измениться
+
+		if (anger >= 0) {
+			screenFlicker()
+		}
+
 		randomFlicker()
 
 	}, delay)
+
 }
 
+
+// ==============================
+// ФОНОВЫЙ GLITCH
+// ==============================
 
 function screenGlitch() {
 
@@ -1080,15 +1929,18 @@ function screenGlitch() {
 		return
 	}
 
+
 	phoneScreen.classList.remove(
 		"glitch"
 	)
 
 	void phoneScreen.offsetWidth
 
+
 	phoneScreen.classList.add(
 		"glitch"
 	)
+
 
 	setTimeout(() => {
 
@@ -1096,26 +1948,66 @@ function screenGlitch() {
 			"glitch"
 		)
 
-	}, 350)
+	}, 250 + Math.random() * 400)
+
 }
 
 
 function randomGlitch() {
 
+	let minDelay
+	let maxDelay
+
+
+	if (anger < 0) {
+
+		minDelay = 18000
+		maxDelay = 35000
+
+	} else if (anger === 0) {
+
+		minDelay = 14000
+		maxDelay = 28000
+
+	} else if (anger <= 3) {
+
+		minDelay = 9000
+		maxDelay = 18000
+
+	} else if (anger <= 6) {
+
+		minDelay = 5000
+		maxDelay = 11000
+
+	} else {
+
+		minDelay = 2200
+		maxDelay = 6000
+
+	}
+
+
 	const delay =
-		Math.random() * 12000 + 7000
+		Math.random() *
+		(maxDelay - minDelay) +
+		minDelay
+
 
 	setTimeout(() => {
 
-		screenGlitch()
+		if (anger >= 1) {
+			screenGlitch()
+		}
+
 		randomGlitch()
 
 	}, delay)
+
 }
 
 
 // ==============================
-// ГЛИТЧ АВАТАРА
+// ФОНОВЫЙ ГЛИТЧ АВАТАРА
 // ==============================
 
 function avatarGlitch() {
@@ -1129,15 +2021,18 @@ function avatarGlitch() {
 		return
 	}
 
+
 	avatar.classList.remove(
 		"avatar-glitch"
 	)
 
 	void avatar.offsetWidth
 
+
 	avatar.classList.add(
 		"avatar-glitch"
 	)
+
 
 	setTimeout(() => {
 
@@ -1146,25 +2041,65 @@ function avatarGlitch() {
 		)
 
 	}, 250)
+
 }
 
 
 function randomAvatarGlitch() {
 
+	let minDelay
+	let maxDelay
+
+
+	if (anger < 0) {
+
+		minDelay = 20000
+		maxDelay = 40000
+
+	} else if (anger === 0) {
+
+		minDelay = 15000
+		maxDelay = 30000
+
+	} else if (anger <= 3) {
+
+		minDelay = 8000
+		maxDelay = 18000
+
+	} else if (anger <= 6) {
+
+		minDelay = 4000
+		maxDelay = 10000
+
+	} else {
+
+		minDelay = 1200
+		maxDelay = 5000
+
+	}
+
+
 	const delay =
-		Math.random() * 7500 + 800
+		Math.random() *
+		(maxDelay - minDelay) +
+		minDelay
+
 
 	setTimeout(() => {
 
-		avatarGlitch()
+		if (anger >= 2) {
+			avatarGlitch()
+		}
+
 		randomAvatarGlitch()
 
 	}, delay)
+
 }
 
 
 // ==============================
-// СТАТУС ВЕРИТИ
+// ФОНОВАЯ СМЕНА СТАТУСА
 // ==============================
 
 function changeVerityStatus() {
@@ -1178,78 +2113,84 @@ function changeVerityStatus() {
 		return
 	}
 
+
+	const originalText =
+		status.textContent
+
+
 	status.textContent =
 		"не в сети"
+
 
 	status.classList.add(
 		"offline"
 	)
 
+
 	setTimeout(() => {
 
 		status.textContent =
-			"в сети"
+			originalText || "в сети"
 
 		status.classList.remove(
 			"offline"
 		)
 
-	}, Math.random() * 2500 + 1500)
+	}, 1000 + Math.random() * 2500)
+
 }
 
 
 function randomStatusChange() {
 
+	let minDelay
+	let maxDelay
+
+
+	if (anger < 0) {
+
+		minDelay = 30000
+		maxDelay = 60000
+
+	} else if (anger <= 3) {
+
+		minDelay = 18000
+		maxDelay = 35000
+
+	} else if (anger <= 6) {
+
+		minDelay = 10000
+		maxDelay = 20000
+
+	} else {
+
+		minDelay = 4000
+		maxDelay = 10000
+
+	}
+
+
 	const delay =
-		Math.random() * 20000 + 10000
+		Math.random() *
+		(maxDelay - minDelay) +
+		minDelay
+
 
 	setTimeout(() => {
 
-		changeVerityStatus()
+		if (anger >= 3) {
+			changeVerityStatus()
+		}
+
 		randomStatusChange()
 
 	}, delay)
+
 }
 
 
 // ==============================
-// СКРИМЕР
-// ==============================
-
-function verityScreamer() {
-
-	const screamer =
-		document.getElementById(
-			"verityScreamer"
-		)
-
-	if (!screamer) {
-		return
-	}
-
-	screamer.classList.remove(
-		"active"
-	)
-
-	// Перезапуск CSS-анимации
-	void screamer.offsetWidth
-
-	screamer.classList.add(
-		"active"
-	)
-
-	setTimeout(() => {
-
-		screamer.classList.remove(
-			"active"
-		)
-
-	}, 700)
-}
-
-
-// ==============================
-// ВРЕМЕННАЯ СМЕНА АВАТАРА
+// СЛУЧАЙНАЯ СМЕНА АВАТАРА
 // ==============================
 
 function changeVerityAvatar() {
@@ -1263,63 +2204,82 @@ function changeVerityAvatar() {
 		return
 	}
 
+
 	avatar.src =
 		"images/verity-v2.png"
+
 
 	setTimeout(() => {
 
 		avatar.src =
 			"images/verity.png"
 
-	}, 20000)
+	}, 3000 + Math.random() * 7000)
+
 }
 
 
 function randomAvatarChange() {
 
+	let minDelay
+	let maxDelay
+
+
+	if (anger < 0) {
+
+		minDelay = 60000
+		maxDelay = 120000
+
+	} else if (anger <= 3) {
+
+		minDelay = 40000
+		maxDelay = 80000
+
+	} else if (anger <= 6) {
+
+		minDelay = 20000
+		maxDelay = 45000
+
+	} else {
+
+		minDelay = 8000
+		maxDelay = 20000
+
+	}
+
+
 	const delay =
-		Math.random() * 120000 + 60000
+		Math.random() *
+		(maxDelay - minDelay) +
+		minDelay
+
 
 	setTimeout(() => {
 
-		changeVerityAvatar()
+		if (anger >= 4) {
+			changeVerityAvatar()
+		}
+
 		randomAvatarChange()
 
 	}, delay)
+
 }
 
-function triggerTrustStatus() {
-
-	const status =
-		document.querySelector(".chat-status")
-
-	if (!status) return
-
-	const originalText =
-		status.textContent
-
-	status.textContent = "не в сети"
-
-	status.classList.add("offline")
-
-	setTimeout(() => {
-
-		status.textContent = originalText
-
-		status.classList.remove("offline")
-
-	}, 700 + Math.random() * 1000)
-}
 
 // ==============================
 // КНОПКИ ДИАЛОГА
 // ==============================
 
 const choice1 =
-	document.getElementById("choice1")
+	document.getElementById(
+		"choice1"
+	)
 
 const choice2 =
-	document.getElementById("choice2")
+	document.getElementById(
+		"choice2"
+	)
 
 
 if (choice1) {
@@ -1327,9 +2287,12 @@ if (choice1) {
 	choice1.addEventListener(
 		"click",
 		() => {
+
 			chooseDialogue(0)
+
 		}
 	)
+
 }
 
 
@@ -1338,22 +2301,38 @@ if (choice2) {
 	choice2.addEventListener(
 		"click",
 		() => {
+
 			chooseDialogue(1)
+
 		}
 	)
+
 }
+
 
 // ==============================
 // ЗАПУСК
 // ==============================
 
+// ВАЖНО:
+//
+// localStorage.clear() здесь НЕ используем.
+//
+// Иначе браузер снесёт вообще
+// всё сохранение сайта.
+//
+
 localStorage.clear()
-localStorage.removeItem("verityGame")
 
 loadGame()
 
+
 renderMessages()
+
 updateGameUI()
+
+
+// Фоновые эффекты
 
 randomFlicker()
 randomGlitch()
@@ -1361,4 +2340,18 @@ randomAvatarGlitch()
 randomStatusChange()
 randomAvatarChange()
 
+
+// Диалог
+
 loadDialogue()
+
+
+console.log(
+	"Отношения при запуске:",
+	{
+		anger: anger,
+		love: getLove(),
+		horror: getHorrorLevel(),
+		lives: lives
+	}
+)
