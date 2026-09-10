@@ -43,6 +43,103 @@ const backgroundMusic =
 backgroundMusic.loop = true
 backgroundMusic.volume = 0.15
 
+
+const buttonClickSound =
+	new Audio("sounds/ui/клик.mp3")
+
+buttonClickSound.volume = 0.35
+
+
+const verityMessageSound =
+	new Audio("sounds/special/soo-veriti_ELxcJg3J.wav")
+
+verityMessageSound.volume = 0.25
+
+
+const playerMessageSound =
+	new Audio("sounds/special/soo-igroka_LJyyCFq6.wav")
+
+playerMessageSound.volume = 0.18
+
+
+const hintSound =
+	new Audio("sounds/special/для подсказки.wav")
+
+hintSound.volume = 0.25
+
+
+
+const specialChoiceSound =
+	new Audio("sounds/special/dlia-tretego-vybora_o0nPT0Jb.wav")
+
+specialChoiceSound.volume = 0.3
+
+
+const lifeLostSound =
+	new Audio("sounds/special/потеря жизни.wav")
+
+lifeLostSound.volume = 0.3
+
+
+
+const lifeRestoreSound =
+	new Audio("sounds/special/восстановление жизни.wav")
+
+lifeRestoreSound.volume = 0.25
+
+
+const itemGetSound =
+	new Audio("sounds/special/получение предмета.wav")
+
+itemGetSound.volume = 0.25
+
+
+const glitchSound =
+	new Audio("sounds/horror/глич.wav")
+
+glitchSound.volume = 0.2
+
+
+const hardGlitchSound =
+	new Audio("sounds/horror/сильный глич.wav")
+
+hardGlitchSound.volume = 0.2
+
+
+const screamerSound =
+	new Audio("sounds/special/скример.wav")
+
+screamerSound.volume = 0.7
+
+
+function playScreamerSound() {
+
+	screamerSound.currentTime = 0
+
+	screamerSound.play().catch(error => {
+		console.log(
+			"Ошибка звука скримера:",
+			error
+		)
+	})
+}
+
+
+const adLoadingSound =
+	new Audio("sounds/special/для загрузки рекламы.wav")
+
+adLoadingSound.volume = 0.2
+
+
+
+const randomSounds = [
+	new Audio("sounds/horror/temnicu-zakryli_[Pro-Sound.org].mp3"),
+	new Audio("sounds/horror/zvuk-dlya-horrora-zloveshchee-rydanie-2_[Pro-Sound.org].wav"),
+	new Audio("sounds/horror/хз какие то рзговоры типо.mp3"),
+	new Audio("sounds/horror/для шепота.mp3")
+]
+
+
 let musicStarted = false
 
 function startBackgroundMusic() {
@@ -60,6 +157,134 @@ window.addEventListener('click', () => {
 		console.log("Автозапуск заблокирован браузером:", error);
 	});
 }, { once: true }); // Срабатывает только один раз
+
+function playButtonClick() {
+
+	buttonClickSound.currentTime = 0
+	buttonClickSound.play()
+
+}
+
+
+function playVerityMessageSound() {
+	verityMessageSound.currentTime = 0
+
+	verityMessageSound.play().catch(error => {
+		console.log("Ошибка звука Верити:", error)
+	})
+}
+
+
+function playPlayerMessageSound() {
+	playerMessageSound.currentTime = 0
+
+	playerMessageSound.play().catch(error => {
+		console.log("Ошибка звука игрока:", error)
+	})
+}
+
+
+function playHintSound() {
+	hintSound.currentTime = 0
+
+	hintSound.play().catch(error => {
+		console.log("Ошибка звука подсказки:", error)
+	})
+}
+
+
+function playSpecialChoiceSound() {
+	specialChoiceSound.currentTime = 0
+
+	specialChoiceSound.play().catch(error => {
+		console.log("Ошибка звука особого выбора:", error)
+	})
+}
+
+
+function playLifeLostSound() {
+	lifeLostSound.currentTime = 0
+
+	lifeLostSound.play().catch(error => {
+		console.log("Ошибка звука потери жизни:", error)
+	})
+}
+
+
+function playLifeRestoreSound() {
+	lifeRestoreSound.currentTime = 0
+
+	lifeRestoreSound.play().catch(error => {
+		console.log("Ошибка звука восстановления жизни:", error)
+	})
+}
+
+
+function playItemGetSound() {
+	itemGetSound.currentTime = 0
+
+	itemGetSound.play().catch(error => {
+		console.log("Ошибка звука получения предмета:", error)
+	})
+}
+
+
+
+function playGlitchSound() {
+	glitchSound.currentTime = 0
+
+	glitchSound.play().catch(error => {
+		console.log("Ошибка звука глитча:", error)
+	})
+}
+
+
+function playHardGlitchSound() {
+
+	hardGlitchSound.currentTime = 0
+
+	hardGlitchSound.play().catch(error => {
+		console.log(
+			"Ошибка звука жесткого глитча:",
+			error
+		)
+	})
+}
+
+
+function playAdLoadingSound() {
+
+	adLoadingSound.currentTime = 0
+
+	adLoadingSound.play().catch(error => {
+		console.log(
+			"Ошибка звука загрузки рекламы:",
+			error
+		)
+	})
+}
+
+
+
+
+function playRandomSound() {
+	const randomIndex =
+		Math.floor(Math.random() * randomSounds.length)
+
+	const sound = randomSounds[randomIndex]
+
+	sound.currentTime = 0
+	sound.play().catch(error => {
+		console.log("Ошибка случайного звука:", error)
+	})
+}
+
+
+setInterval(() => {
+	playRandomSound()
+}, 60000)
+
+
 
 
 
@@ -80,6 +305,8 @@ function sleep(ms) {
 }
 
 function showLifeLostMenu() {
+
+	playLifeLostSound()
 
 	const menu =
 		document.getElementById("lifeLostMenu")
@@ -185,6 +412,8 @@ function restoreLostLife() {
 			3
 		)
 
+		playLifeRestoreSound()
+
 
 		lifeRestoreAvailable = false
 
@@ -225,6 +454,7 @@ function unlockSpecialChoice() {
 
 	if (button) {
 		button.disabled = true
+		playAdLoadingSound()
 		button.textContent = "📺 Загрузка рекламы..."
 	}
 
@@ -232,6 +462,8 @@ function unlockSpecialChoice() {
 	setTimeout(() => {
 
 		specialChoiceUnlocked = true
+
+		playSpecialChoiceSound()
 
 		console.log("✨ Особый выбор разблокирован")
 
@@ -320,7 +552,10 @@ if (restoreLifeButton) {
 
 	restoreLifeButton.addEventListener(
 		"click",
-		restoreLostLife
+		() => {
+			playButtonClick()
+			restoreLostLife()
+		}
 	)
 
 }
@@ -330,7 +565,10 @@ if (continueAfterDeathButton) {
 
 	continueAfterDeathButton.addEventListener(
 		"click",
-		continueAfterLifeLost
+		() => {
+			playButtonClick()
+			continueAfterLifeLost()
+		}
 	)
 
 }
@@ -498,6 +736,9 @@ function unlockHint() {
 	}
 
 	button.disabled = true
+
+	playAdLoadingSound()
+
 	button.classList.add("loading")
 	button.textContent = "📺 Загрузка рекламы..."
 
@@ -554,6 +795,8 @@ function showHint() {
 
 	message.textContent = hint
 	message.style.display = "block"
+
+	playHintSound()
 
 	updateHintButton()
 }
@@ -828,6 +1071,7 @@ async function chooseDialogue(index) {
 	// СООБЩЕНИЕ ИГРОКА
 	// ==========================
 
+	playPlayerMessageSound()
 	addMessage(
 		"user",
 		choice.text
@@ -916,8 +1160,7 @@ async function chooseDialogue(index) {
 
 	if (nextDialogue?.verity) {
 
-		addMessage(
-			"verity",
+		showVerityMessage(
 			nextDialogue.verity
 		)
 
@@ -1042,6 +1285,9 @@ function addMessage(sender, text) {
 
 
 function showVerityMessage(text) {
+
+	console.log("🔊 Вызван звук Верити")
+	playVerityMessageSound()
 
 	addMessage(
 		"verity",
@@ -1433,6 +1679,8 @@ function processAngerHorror() {
 
 function triggerRandomAngerEffect() {
 
+	playGlitchSound()
+
 	if (horrorEffectCooldown) {
 		return
 	}
@@ -1478,11 +1726,14 @@ function triggerRandomAngerEffect() {
 
 function triggerAngerGlitch() {
 
+
 	console.log(
 		"HORROR: GLITCH",
 		"anger:",
 		anger
 	)
+
+	playHardGlitchSound()
 
 
 	const phoneScreen =
@@ -1659,6 +1910,8 @@ function triggerAngerStatus() {
 // ==============================
 
 function triggerAngerScreamer() {
+
+	playScreamerSound()
 
 	if (screamerCooldown) {
 		return
@@ -1936,7 +2189,12 @@ if (inventoryButton) {
 
 	inventoryButton.addEventListener(
 		"click",
-		openInventory
+		() => {
+
+			playButtonClick()
+			openInventory()
+
+		}
 	)
 
 }
@@ -1946,7 +2204,12 @@ if (closeInventory) {
 
 	closeInventory.addEventListener(
 		"click",
-		closeInventoryWindow
+		() => {
+
+			playButtonClick()
+			closeInventoryWindow()
+
+		}
 	)
 
 }
@@ -2184,6 +2447,8 @@ function renderInventory() {
 					"click",
 					() => {
 
+						playButtonClick()
+
 						const itemName =
 							document.getElementById(
 								"itemName"
@@ -2286,6 +2551,9 @@ function rewardItemAd() {
 
 	inventory[randomItem.id] =
 		(inventory[randomItem.id] || 0) + 1
+
+
+	playItemGetSound()
 
 
 	saveGame()
@@ -2396,7 +2664,12 @@ if (itemAdButton) {
 
 	itemAdButton.addEventListener(
 		"click",
-		rewardItemAd
+		() => {
+
+			playButtonClick()
+			rewardItemAd()
+
+		}
 	)
 
 }
@@ -2418,6 +2691,7 @@ if (skinButton) {
 		"click",
 		() => {
 
+			playButtonClick()
 			alert(
 				"Система скинов пока находится в разработке."
 			)
@@ -2543,6 +2817,8 @@ function randomFlicker() {
 // ==============================
 
 function screenGlitch() {
+
+	playHardGlitchSound()
 
 	const phoneScreen =
 		document.querySelector(
@@ -2954,7 +3230,10 @@ if (hintButton) {
 
 	hintButton.addEventListener(
 		"click",
-		unlockHint
+		() => {
+			playButtonClick()
+			unlockHint()
+		}
 	)
 
 }
@@ -2966,6 +3245,7 @@ if (choice1) {
 		"click",
 		() => {
 
+			playButtonClick()
 			chooseDialogue(0)
 
 		}
@@ -2980,6 +3260,7 @@ if (choice2) {
 		"click",
 		() => {
 
+			playButtonClick()
 			chooseDialogue(1)
 
 		}

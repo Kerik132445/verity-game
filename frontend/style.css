@@ -2799,3 +2799,172 @@ body {
 
 	text-align: left;
 }
+
+
+
+
+
+
+
+
+
+/* ============================== */
+/* ГЛАВНОЕ МЕНЮ */
+/* ============================== */
+
+#main-menu {
+	position: fixed;
+	inset: 0;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	background: #080808;
+
+	z-index: 1000;
+}
+
+
+/* Основное содержимое */
+
+.menu-content {
+	width: 320px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	text-align: center;
+}
+
+
+/* Название */
+
+.menu-title {
+	margin-bottom: 45px;
+}
+
+.menu-title h1 {
+	margin: 0;
+
+	font-family: monospace;
+	font-size: 42px;
+	font-weight: 400;
+	letter-spacing: 8px;
+
+	color: #eeeeee;
+}
+
+.menu-title p {
+	margin: 12px 0 0;
+
+	font-family: monospace;
+	font-size: 12px;
+	letter-spacing: 2px;
+
+	color: rgba(255, 255, 255, 0.4);
+}
+
+
+/* Кнопки */
+
+.menu-buttons {
+	width: 100%;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.menu-buttons button {
+	width: 100%;
+	height: 48px;
+
+	background: rgba(255, 255, 255, 0.025);
+
+	border: 1px solid rgba(255, 255, 255, 0.12);
+
+	color: rgba(255, 255, 255, 0.7);
+
+	font-family: monospace;
+	font-size: 12px;
+	letter-spacing: 2px;
+
+	cursor: pointer;
+
+	transition:
+		background 0.2s ease,
+		border-color 0.2s ease,
+		color 0.2s ease,
+		transform 0.2s ease;
+}
+
+
+/* Наведение */
+
+.menu-buttons button:hover {
+	background: rgba(255, 255, 255, 0.06);
+
+	border-color: rgba(255, 255, 255, 0.35);
+
+	color: #ffffff;
+
+	transform: translateX(2px);
+}
+
+
+/* Нажатие */
+
+.menu-buttons button:active {
+	transform: translateX(1px) scale(0.99);
+}
+
+
+/* Версия */
+
+.menu-version {
+	margin-top: 35px;
+
+	font-family: monospace;
+	font-size: 9px;
+	letter-spacing: 2px;
+
+	color: rgba(255, 255, 255, 0.2);
+}
+
+
+
+
+.menu-verity img {
+	width: min(650px, 90vw);
+	max-height: 90vh;
+	object-fit: contain;
+
+	opacity: 0.25;
+
+	filter:
+		blur(1px);
+
+	animation: verityFloat 7s ease-in-out infinite;
+}
+
+
+@keyframes verityFloat {
+
+	0% {
+		transform:
+			translateY(10px) rotate(-1deg);
+	}
+
+	50% {
+		transform:
+			translateY(-12px) rotate(1deg);
+	}
+
+	100% {
+		transform:
+			translateY(10px) rotate(-1deg);
+	}
+
+}
