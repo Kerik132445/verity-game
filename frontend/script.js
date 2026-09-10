@@ -30,6 +30,40 @@ let isWaitingForReply = false
 let horrorEffectCooldown = false
 let screamerCooldown = false
 
+
+
+
+
+
+
+
+const backgroundMusic =
+	new Audio("sounds/music/на задний фон.mp3")
+
+backgroundMusic.loop = true
+backgroundMusic.volume = 0.15
+
+let musicStarted = false
+
+function startBackgroundMusic() {
+
+	if (musicStarted) {
+		return
+	}
+
+	backgroundMusic.play()
+	musicStarted = true
+}
+
+window.addEventListener('click', () => {
+	backgroundMusic.play().catch(error => {
+		console.log("Автозапуск заблокирован браузером:", error);
+	});
+}, { once: true }); // Срабатывает только один раз
+
+
+
+
 // ==============================
 // НАСТРОЙКИ
 // ==============================
