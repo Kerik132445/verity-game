@@ -11,6 +11,8 @@ let messages = []
 let hintCharges = 0
 let hintShown = false
 
+let gameFinished = false
+
 let currentDialogue = "start"
 
 let anger = 0
@@ -591,7 +593,8 @@ function saveGame() {
 		messages: messages,
 		currentDialogue: currentDialogue,
 		anger: anger,
-		lives: lives
+		lives: lives,
+		gameFinished: gameFinished
 	}
 
 	localStorage.setItem(
@@ -630,6 +633,9 @@ function loadGame() {
 		lives =
 			gameData.lives ?? 3
 
+		gameFinished =
+			gameData.gameFinished ?? false
+
 	} catch (error) {
 
 		console.error(
@@ -639,6 +645,8 @@ function loadGame() {
 
 	}
 }
+
+
 
 
 // ==============================
@@ -1220,6 +1228,8 @@ async function chooseDialogue(index) {
 function triggerFinalScreamer() {
 
 	console.log("💀 ИГРА ОКОНЧЕНА")
+
+	gameFinished = true
 
 	lives = 0
 
@@ -3342,6 +3352,8 @@ function hideMainMenu() {
 
 function startNewGame() {
 
+	gameFinished = false
+
 	document.querySelector(".game").style.display = "flex"
 
 	document
@@ -3351,6 +3363,10 @@ function startNewGame() {
 	document
 		.getElementById("verityScreamer")
 		.classList.remove("active")
+
+	document
+		.getElementById("continue-button")
+		.disabled = false
 
 	isWaitingForReply = false
 	isLifeLostMenuOpen = false
@@ -3408,6 +3424,11 @@ function startNewGame() {
 
 
 function continueGame() {
+
+	if (gameFinished) {
+		console.log("❌ Игра уже закончена")
+		return
+	}
 
 	playButtonClick()
 
@@ -3493,6 +3514,14 @@ if (aboutButton) {
 
 loadGame()
 
+
+if (continueButton) {
+
+	continueButton.disabled =
+		gameFinished
+
+}
+
 randomFlicker()
 randomGlitch()
 randomAvatarGlitch()
@@ -3536,6 +3565,10 @@ function returnToMainMenu() {
 	document
 		.getElementById("main-menu")
 		.style.display = "flex"
+
+	if (continueButton) {
+		continueButton.disabled = gameFinished
+	}
 }
 
 function skipToEnd() {
