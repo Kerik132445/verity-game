@@ -1,3 +1,25 @@
+let ysdk = null
+
+if (typeof YaGames !== "undefined") {
+
+	YaGames.init()
+		.then((_ysdk) => {
+
+			ysdk = _ysdk
+
+			console.log("Yandex Games SDK подключён")
+
+		})
+		.catch((error) => {
+
+			console.error(
+				"Ошибка Yandex Games SDK:",
+				error
+			)
+
+		})
+
+}
 
 console.log("VERITY GAME ЗАПУЩЕН")
 
@@ -140,6 +162,36 @@ const randomSounds = [
 	new Audio("sounds/horror/voices.mp3"),
 	new Audio("sounds/horror/whisper.mp3")
 ]
+
+
+const gameSounds = [
+	backgroundMusic,
+	buttonClickSound,
+	verityMessageSound,
+	playerMessageSound,
+	hintSound,
+	specialChoiceSound,
+	lifeLostSound,
+	lifeRestoreSound,
+	itemGetSound,
+	glitchSound,
+	hardGlitchSound,
+	screamerSound,
+	adLoadingSound,
+	...randomSounds
+]
+
+function pauseGameAudio() {
+	gameSounds.forEach(sound => {
+		sound.pause()
+	})
+}
+
+function resumeGameAudio() {
+	if (musicStarted) {
+		backgroundMusic.play().catch(() => { })
+	}
+}
 
 
 let musicStarted = false
@@ -385,13 +437,6 @@ function restoreLostLife() {
 	)
 
 
-	/*
-		ЗДЕСЬ ПОКА ИМИТИРУЕМ РЕКЛАМУ.
-
-		Позже сюда подключим реальную
-		рекламу Яндекс Игр.
-	*/
-
 	const button =
 		document.getElementById(
 			"restoreLifeButton"
@@ -406,35 +451,114 @@ function restoreLostLife() {
 
 	}
 
+	if (!ysdk) {
 
-	setTimeout(() => {
-
-		lives = Math.min(
-			lives + 1,
-			3
+		console.error(
+			"Yandex Games SDK ещё не готов"
 		)
 
-		playLifeRestoreSound()
+		if (button) {
 
+			button.disabled = false
 
-		lifeRestoreAvailable = false
+			button.innerHTML =
+				"❤️ Восстановить жизнь"
 
+		}
 
-		saveGame()
+		return
+	}
 
-		updateGameUI()
+	let lifeRewarded = false
 
+	ysdk.adv.showRewardedVideo({
 
-		hideLifeLostMenu()
+		callbacks: {
 
+			onOpen: () => {
 
-		console.log(
-			"❤️ Жизнь восстановлена",
-			lives
-		)
+				console.log(
+					"📺 Реклама восстановления жизни открыта"
+				)
 
+				pauseGameAudio()
+			},
 
-	}, 1500)
+			onRewarded: () => {
+
+				console.log(
+					"✨ Реклама просмотрена, выдаём жизнь"
+				)
+
+				lives = Math.min(
+					lives + 1,
+					3
+				)
+
+				lifeRewarded = true
+
+				lifeRestoreAvailable = false
+
+				saveGame()
+
+				updateGameUI()
+
+				console.log(
+					"❤️ Жизнь восстановлена",
+					lives
+				)
+			},
+
+			onClose: (wasShown) => {
+
+				resumeGameAudio()
+
+				if (lifeRewarded) {
+					playLifeRestoreSound()
+				}
+
+				console.log(
+					"📺 Реклама закрыта:",
+					wasShown
+				)
+
+				if (
+					lifeRestoreAvailable &&
+					button
+				) {
+
+					button.disabled = false
+
+					button.innerHTML =
+						"❤️ Восстановить жизнь"
+
+				} else {
+
+					hideLifeLostMenu()
+
+				}
+			},
+
+			onError: (error) => {
+
+				resumeGameAudio()
+
+				console.error(
+					"Ошибка рекламы:",
+					error
+				)
+
+				if (button) {
+
+					button.disabled = false
+
+					button.innerHTML =
+						"❤️ Восстановить жизнь"
+
+				}
+			}
+		}
+	})
 
 }
 
@@ -460,39 +584,97 @@ function unlockSpecialChoice() {
 		button.textContent = "📺 Загрузка рекламы..."
 	}
 
-	// ВРЕМЕННАЯ ИМИТАЦИЯ РЕКЛАМЫ
-	setTimeout(() => {
+	// Если SDK ещё не загрузился
+	if (!ysdk) {
+		console.error("Yandex Games SDK ещё не готов")
 
-		specialChoiceUnlocked = true
-
-		playSpecialChoiceSound()
-
-		console.log("✨ Особый выбор разблокирован")
-
-		if (specialChoiceButton) {
-
-			specialChoiceButton.classList.remove(
-				"glitching"
-			)
-
-			void specialChoiceButton.offsetWidth
-
-			specialChoiceButton.classList.add(
-				"glitching"
-			)
-
-			setTimeout(() => {
-
-				specialChoiceButton.classList.remove(
-					"glitching"
-				)
-
-			}, 500)
+		if (button) {
+			button.disabled = false
+			button.textContent = "📺 Посмотреть рекламу"
 		}
 
-		renderDialogue()
+		return
+	}
 
-	}, 1500)
+	let specialRewarded = false
+
+	ysdk.adv.showRewardedVideo({
+
+		callbacks: {
+
+			onOpen: () => {
+				console.log("📺 Реклама открыта")
+				pauseGameAudio()
+			},
+
+			onRewarded: () => {
+
+				console.log("✨ Реклама просмотрена, выдаём награду")
+
+				specialChoiceUnlocked = true
+
+				specialRewarded = true
+
+				if (specialChoiceButton) {
+
+					specialChoiceButton.classList.remove(
+						"glitching"
+					)
+
+					void specialChoiceButton.offsetWidth
+
+					specialChoiceButton.classList.add(
+						"glitching"
+					)
+
+					setTimeout(() => {
+
+						specialChoiceButton.classList.remove(
+							"glitching"
+						)
+
+					}, 500)
+				}
+
+				renderDialogue()
+			},
+
+			onClose: (wasShown) => {
+
+				resumeGameAudio()
+				if (specialRewarded) {
+					playSpecialChoiceSound()
+				}
+
+				console.log(
+					"📺 Реклама закрыта:",
+					wasShown
+				)
+
+				if (!specialChoiceUnlocked && button) {
+					button.disabled = false
+					button.textContent =
+						"📺 Посмотреть рекламу"
+				}
+			},
+
+			onError: (error) => {
+
+				resumeGameAudio()
+
+				console.error(
+					"Ошибка рекламы:",
+					error
+				)
+
+				if (button) {
+					button.disabled = false
+					button.textContent =
+						"📺 Посмотреть рекламу"
+				}
+			}
+		}
+	})
 }
 
 
@@ -685,6 +867,10 @@ async function loadDialogue() {
 
 		renderDialogue()
 
+		if (ysdk?.features?.LoadingAPI) {
+			ysdk.features.LoadingAPI.ready()
+		}
+
 	} catch (error) {
 
 		console.error(
@@ -757,21 +943,61 @@ function unlockHint() {
 	button.classList.add("loading")
 	button.textContent = "📺 Загрузка рекламы..."
 
-	console.log("📺 Имитация загрузки рекламы...")
+	let hintRewarded = false
 
-	setTimeout(() => {
-
-		console.log("📺 Реклама закончилась")
-
-		hintCharges = 3
-		hintShown = false
+	if (!ysdk) {
+		console.error("Yandex Games SDK ещё не готов")
 
 		button.disabled = false
 		button.classList.remove("loading")
+		button.textContent = "💡 Подсказка"
 
-		showHint()
+		return
+	}
 
-	}, 1500)
+	ysdk.adv.showRewardedVideo({
+		callbacks: {
+
+			onOpen: () => {
+				console.log("📺 Реклама подсказки открыта")
+				pauseGameAudio()
+			},
+
+			onRewarded: () => {
+				console.log("💡 Реклама просмотрена, выдаём подсказки")
+
+				hintCharges = 3
+				hintShown = false
+				hintRewarded = true
+
+				saveGame()
+				updateHintButton()
+			},
+
+			onClose: (wasShown) => {
+				resumeGameAudio()
+
+				button.disabled = false
+				button.classList.remove("loading")
+
+				if (hintRewarded) {
+					showHint()
+				} else {
+					button.textContent = "💡 Подсказка"
+				}
+			},
+
+			onError: (error) => {
+				console.error("❌ Ошибка рекламы подсказки:", error)
+
+				resumeGameAudio()
+
+				button.disabled = false
+				button.classList.remove("loading")
+				button.textContent = "💡 Подсказка"
+			}
+		}
+	})
 }
 
 function showHint() {
@@ -2537,31 +2763,78 @@ function rewardItemAd() {
 	}
 
 
-	inventory[randomItem.id] =
-		(inventory[randomItem.id] || 0) + 1
+	const button = document.getElementById("item-ad-button")
 
+	if (!button) {
+		console.error("❌ Кнопка получения предмета не найдена")
+		return
+	}
 
-	playItemGetSound()
+	button.disabled = true
+	playAdLoadingSound()
+	button.classList.add("loading")
+	button.textContent = "📺 Загрузка рекламы..."
 
+	let itemRewarded = false
 
-	saveGame()
+	if (!ysdk) {
+		console.error("Yandex Games SDK ещё не готов")
 
+		button.disabled = false
+		button.classList.remove("loading")
+		button.textContent = "🎁 Получить предмет"
 
-	showItemNotification(
-		`Ты получил: ${randomItem.name}`
-	)
+		return
+	}
 
+	ysdk.adv.showRewardedVideo({
+		callbacks: {
 
-	openInventory()
+			onOpen: () => {
+				console.log("📺 Реклама предмета открыта")
+				pauseGameAudio()
+			},
 
+			onRewarded: () => {
+				console.log("🎁 Реклама просмотрена, выдаём предмет")
 
-	setTimeout(() => {
+				inventory[randomItem.id] =
+					(inventory[randomItem.id] || 0) + 1
 
-		highlightItem(
-			Object.keys(inventory).length - 1
-		)
+				itemRewarded = true
 
-	}, 100)
+				saveGame()
+				showItemNotification(`Ты получил: ${randomItem.name}`)
+			},
+
+			onClose: (wasShown) => {
+				resumeGameAudio()
+
+				button.disabled = false
+				button.classList.remove("loading")
+				button.textContent = "🎁 Получить предмет"
+
+				if (itemRewarded) {
+					playItemGetSound()
+					openInventory()
+
+					setTimeout(() => {
+						highlightItem(Object.keys(inventory).length - 1)
+					}, 100)
+				}
+			},
+
+			onError: (error) => {
+				console.error("❌ Ошибка рекламы предмета:", error)
+
+				resumeGameAudio()
+
+				button.disabled = false
+				button.classList.remove("loading")
+				button.textContent = "🎁 Получить предмет"
+			}
+		}
+	})
 
 }
 
@@ -3516,22 +3789,6 @@ function returnToMainMenu() {
 		continueButton.disabled = gameFinished
 	}
 }
-
-function skipToEnd() {
-	currentDialogue = "ending_approach"
-
-	anger = -26
-	lives = 3
-
-	messages = []
-
-	saveGame()
-	updateGameUI()
-	renderDialogue()
-
-	console.log("🛠️ DEV MODE: jumped to ending")
-}
-
 
 const completeMainMenuButton =
 	document.getElementById("completeMainMenuButton")
