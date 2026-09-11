@@ -2870,6 +2870,7 @@ body {
 /* Кнопки */
 
 .menu-buttons {
+	margin-left: 42px;
 	width: 100%;
 
 	display: flex;
@@ -2967,4 +2968,278 @@ body {
 			translateY(10px) rotate(-1deg);
 	}
 
+}
+
+
+
+
+.menu-glitch-background {
+	position: absolute;
+	inset: 0;
+
+	overflow: hidden;
+
+	background:
+		radial-gradient(circle at center,
+			#111 0%,
+			#080808 45%,
+			#030303 100%);
+
+	pointer-events: none;
+}
+
+
+.glitch-grid {
+	position: absolute;
+	inset: 0;
+
+	background-image:
+		linear-gradient(rgba(255, 255, 255, 0.025) 1px,
+			transparent 1px),
+		linear-gradient(90deg,
+			rgba(255, 255, 255, 0.025) 1px,
+			transparent 1px);
+
+	background-size: 40px 40px;
+
+	opacity: 0.35;
+}
+
+
+.glitch-text {
+	position: absolute;
+
+	font-family: monospace;
+	font-size: 11px;
+	letter-spacing: 2px;
+
+	color: rgba(255, 255, 255, 0.18);
+
+	pointer-events: none;
+
+	animation: backgroundGlitch 6s infinite;
+}
+
+@keyframes backgroundGlitch {
+
+	0%,
+	90%,
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	92% {
+		opacity: 0.3;
+		transform: translateX(-3px);
+	}
+
+	93% {
+		opacity: 0.8;
+		transform: translateX(3px);
+	}
+
+	94% {
+		opacity: 0.4;
+		transform: translateX(-1px);
+	}
+
+}
+
+
+.menu-verity {
+	z-index: 1;
+}
+
+.menu-content {
+	position: relative;
+	z-index: 2;
+}
+
+
+
+/* Позиции */
+
+.glitch-text-1 {
+	top: 10%;
+	left: 8%;
+}
+
+.glitch-text-2 {
+	top: 22%;
+	right: 12%;
+}
+
+.glitch-text-3 {
+	top: 8%;
+	right: 35%;
+}
+
+.glitch-text-4 {
+	top: 45%;
+	left: 5%;
+}
+
+.glitch-text-5 {
+	bottom: 20%;
+	right: 8%;
+}
+
+.glitch-text-6 {
+	bottom: 12%;
+	left: 15%;
+}
+
+.glitch-text-7 {
+	top: 70%;
+	left: 7%;
+}
+
+.glitch-text-8 {
+	top: 35%;
+	right: 6%;
+}
+
+.glitch-text-9 {
+	bottom: 35%;
+	right: 18%;
+}
+
+.glitch-text-10 {
+	top: 16%;
+	left: 38%;
+}
+
+
+.glitch-text-2 {
+	top: 22%;
+	right: 12%;
+	animation-delay: 1.3s;
+}
+
+.glitch-text-3 {
+	top: 8%;
+	right: 35%;
+	animation-delay: 2.7s;
+}
+
+.glitch-text-4 {
+	top: 45%;
+	left: 5%;
+	animation-delay: 0.8s;
+}
+
+.glitch-text-5 {
+	bottom: 20%;
+	right: 8%;
+	animation-delay: 3.5s;
+}
+
+.glitch-text-7 {
+	top: 70%;
+	left: 7%;
+	animation-delay: 4.2s;
+}
+
+
+
+
+
+
+
+
+#gameOver {
+	position: fixed;
+	inset: 0;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	background: rgba(0, 0, 0, 0.94);
+
+	opacity: 0;
+	visibility: hidden;
+
+	z-index: 9999;
+
+	transition:
+		opacity 0.8s ease,
+		visibility 0.8s ease;
+}
+
+#gameOver.active {
+	opacity: 1;
+	visibility: visible;
+}
+
+.game-over-content {
+	text-align: center;
+	font-family: monospace;
+}
+
+.game-over-title {
+	font-size: 42px;
+	color: #b30000;
+
+	letter-spacing: 8px;
+
+	animation: gameOverGlitch 2s infinite;
+}
+
+.game-over-text {
+	margin-top: 20px;
+
+	color: rgba(255, 255, 255, 0.5);
+
+	font-size: 14px;
+}
+
+#mainMenuButton {
+	margin-top: 35px;
+
+	padding: 12px 24px;
+
+	background: transparent;
+
+	border: 1px solid rgba(255, 255, 255, 0.3);
+
+	color: rgba(255, 255, 255, 0.7);
+
+	font-family: monospace;
+	font-size: 12px;
+
+	cursor: pointer;
+
+	transition: 0.2s;
+}
+
+#mainMenuButton:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: white;
+}
+
+@keyframes gameOverGlitch {
+
+	0%,
+	90%,
+	100% {
+		transform: translate(0);
+		opacity: 1;
+	}
+
+	92% {
+		transform: translate(-3px, 1px);
+		opacity: 0.7;
+	}
+
+	94% {
+		transform: translate(3px, -1px);
+		opacity: 0.8;
+	}
+
+	96% {
+		transform: translate(-1px, 0);
+		opacity: 0.5;
+	}
 }

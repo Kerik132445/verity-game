@@ -13,7 +13,7 @@ let hintShown = false
 
 let currentDialogue = "start"
 
-let anger = 9
+let anger = 0
 let lives = 3
 
 let lifeRestoreAvailable = false
@@ -530,10 +530,17 @@ function continueAfterLifeLost() {
 
 function showGameOver() {
 
-	console.log(
-		"Здесь будет экран GAME OVER"
-	)
+	console.log("💀 GAME OVER")
 
+	const gameOver =
+		document.getElementById("gameOver")
+
+	if (!gameOver) {
+		console.error("❌ #gameOver не найден")
+		return
+	}
+
+	gameOver.classList.add("active")
 }
 
 
@@ -1166,6 +1173,20 @@ async function chooseDialogue(index) {
 
 	}
 
+	if (
+		nextDialogue &&
+		(!nextDialogue.choices || nextDialogue.choices.length === 0)
+	) {
+
+		console.log("💀 ДОСТИГНУТ КОНЕЦ ДИАЛОГА")
+
+		setTimeout(() => {
+			triggerFinalScreamer()
+		}, 1500)
+
+		return
+	}
+
 
 	// ==========================
 	// ПРОВЕРКА МАКСИМАЛЬНОЙ ЗЛОСТИ
@@ -1193,6 +1214,40 @@ async function chooseDialogue(index) {
 		choice2.disabled = false
 	}
 
+}
+
+
+function triggerFinalScreamer() {
+
+	console.log("💀 ИГРА ОКОНЧЕНА")
+
+	lives = 0
+
+	saveGame()
+	updateGameUI()
+
+	setTimeout(() => {
+
+		playScreamerSound()
+
+		const screamer =
+			document.getElementById("verityScreamer")
+
+		if (!screamer) return
+
+		screamer.classList.remove("active")
+
+		void screamer.offsetWidth
+
+		screamer.classList.add("active")
+
+	}, 300)
+
+	setTimeout(() => {
+
+		showGameOver()
+
+	}, 1200)
 }
 
 // ==============================
@@ -1531,27 +1586,35 @@ function handleLoveMax() {
 
 function getHorrorLevel() {
 
-	if (anger < 0) {
-		return "love"
+	if (anger >= 10) {
+		return "critical"
 	}
 
-	if (anger === 0) {
-		return "neutral"
+	if (anger >= 7) {
+		return "very-high"
 	}
 
-	if (anger <= 3) {
-		return "low"
-	}
-
-	if (anger <= 6) {
-		return "medium"
-	}
-
-	if (anger <= 9) {
+	if (anger >= 4) {
 		return "high"
 	}
 
-	return "critical"
+	if (anger >= 1) {
+		return "medium"
+	}
+
+	if (anger >= -5) {
+		return "low"
+	}
+
+	if (anger >= -17) {
+		return "medium-love"
+	}
+
+	if (anger >= -24) {
+		return "low-love"
+	}
+
+	return "hidden-love"
 }
 
 
@@ -1561,9 +1624,7 @@ function getHorrorLevel() {
 
 function processAngerHorror() {
 
-	const level =
-		getHorrorLevel()
-
+	const level = getHorrorLevel()
 
 	console.log(
 		"%cHORROR CHECK",
@@ -1576,50 +1637,27 @@ function processAngerHorror() {
 		}
 	)
 
-
-	// ==========================
-	// ЛЮБОВЬ
-	// ==========================
-
-	if (level === "love") {
-
+	if (level === "critical") {
 		return
 	}
 
+	if (level === "very-high") {
 
-	// ==========================
-	// НЕЙТРАЛЬНО
-	// ==========================
-
-	if (level === "neutral") {
-
-		// Очень редко
-
-		if (Math.random() < 0.05) {
+		if (Math.random() < 0.80) {
 			triggerRandomAngerEffect()
 		}
 
 		return
 	}
 
+	if (level === "high") {
 
-	// ==========================
-	// ЗЛОСТЬ 1-3
-	// ==========================
-
-	if (level === "low") {
-
-		if (Math.random() < 0.20) {
+		if (Math.random() < 0.60) {
 			triggerRandomAngerEffect()
 		}
 
 		return
 	}
-
-
-	// ==========================
-	// ЗЛОСТЬ 4-6
-	// ==========================
 
 	if (level === "medium") {
 
@@ -1630,48 +1668,42 @@ function processAngerHorror() {
 		return
 	}
 
+	if (level === "low") {
 
-	// ==========================
-	// ЗЛОСТЬ 7-9
-	// ==========================
-
-	if (level === "high") {
-
-		if (Math.random() < 0.70) {
+		if (Math.random() < 0.20) {
 			triggerRandomAngerEffect()
 		}
 
+		return
+	}
 
-		// Иногда скример
+	if (level === "medium-love") {
 
-		if (
-			Math.random() < 0.10 &&
-			!screamerCooldown
-		) {
-
-			triggerAngerScreamer()
-
+		if (Math.random() < 0.18) {
+			triggerRandomAngerEffect()
 		}
 
 		return
 	}
 
+	if (level === "low-love") {
 
-	// ==========================
-	// ЗЛОСТЬ 10
-	// ==========================
-
-	if (level === "critical") {
-
-		// На максимальной злости
-		// скример происходит сразу
+		if (Math.random() < 0.12) {
+			triggerRandomAngerEffect()
+		}
 
 		return
-
 	}
 
-}
+	if (level === "hidden-love") {
 
+		if (Math.random() < 0.07) {
+			triggerRandomAngerEffect()
+		}
+
+		return
+	}
+}
 
 // ==============================
 // СЛУЧАЙНЫЙ ЭФФЕКТ
@@ -2752,41 +2784,40 @@ function randomFlicker() {
 	let maxDelay
 
 
-	if (anger < 0) {
+	if (anger >= 7) {
 
-		// Любовь
+		minDelay = 1500
+		maxDelay = 4000
 
-		minDelay = 12000
-		maxDelay = 25000
+	} else if (anger >= 4) {
 
-	} else if (anger === 0) {
+		minDelay = 3000
+		maxDelay = 7000
 
-		// Нейтрально
+	} else if (anger >= 1) {
 
-		minDelay = 9000
+		minDelay = 5000
+		maxDelay = 10000
+
+	} else if (anger >= -5) {
+
+		minDelay = 7000
+		maxDelay = 14000
+
+	} else if (anger >= -17) {
+
+		minDelay = 10000
 		maxDelay = 18000
 
-	} else if (anger <= 3) {
+	} else if (anger >= -24) {
 
-		// Лёгкая злость
-
-		minDelay = 6000
-		maxDelay = 13000
-
-	} else if (anger <= 6) {
-
-		// Средняя
-
-		minDelay = 4000
-		maxDelay = 9000
+		minDelay = 14000
+		maxDelay = 25000
 
 	} else {
 
-		// Сильная
-
-		minDelay = 1800
-		maxDelay = 5000
-
+		minDelay = 18000
+		maxDelay = 32000
 	}
 
 
@@ -2801,7 +2832,7 @@ function randomFlicker() {
 		// Проверяем ещё раз,
 		// потому что anger мог измениться
 
-		if (anger >= 0) {
+		if (anger > -30) {
 			screenFlicker()
 		}
 
@@ -2859,31 +2890,40 @@ function randomGlitch() {
 	let maxDelay
 
 
-	if (anger < 0) {
+	if (anger >= 7) {
 
-		minDelay = 18000
-		maxDelay = 35000
+		minDelay = 2000
+		maxDelay = 5000
 
-	} else if (anger === 0) {
+	} else if (anger >= 4) {
 
-		minDelay = 14000
-		maxDelay = 28000
+		minDelay = 4000
+		maxDelay = 9000
 
-	} else if (anger <= 3) {
+	} else if (anger >= 1) {
 
-		minDelay = 9000
+		minDelay = 7000
+		maxDelay = 14000
+
+	} else if (anger >= -5) {
+
+		minDelay = 10000
 		maxDelay = 18000
 
-	} else if (anger <= 6) {
+	} else if (anger >= -17) {
 
-		minDelay = 5000
-		maxDelay = 11000
+		minDelay = 14000
+		maxDelay = 24000
+
+	} else if (anger >= -24) {
+
+		minDelay = 20000
+		maxDelay = 32000
 
 	} else {
 
-		minDelay = 2200
-		maxDelay = 6000
-
+		minDelay = 25000
+		maxDelay = 40000
 	}
 
 
@@ -2895,7 +2935,7 @@ function randomGlitch() {
 
 	setTimeout(() => {
 
-		if (anger >= 1) {
+		if (anger > -30) {
 			screenGlitch()
 		}
 
@@ -3269,6 +3309,176 @@ if (choice2) {
 }
 
 
+
+// ==============================
+// ГЛАВНОЕ МЕНЮ
+// ==============================
+
+const mainMenu =
+	document.getElementById("main-menu")
+
+const startButton =
+	document.getElementById("start-button")
+
+const continueButton =
+	document.getElementById("continue-button")
+
+const aboutButton =
+	document.getElementById("about-button")
+
+
+function hideMainMenu() {
+
+	if (!mainMenu) {
+		return
+	}
+
+	mainMenu.style.display = "none"
+
+	startBackgroundMusic()
+
+}
+
+
+function startNewGame() {
+
+	document.querySelector(".game").style.display = "flex"
+
+	document
+		.getElementById("gameOver")
+		.classList.remove("active")
+
+	document
+		.getElementById("verityScreamer")
+		.classList.remove("active")
+
+	isWaitingForReply = false
+	isLifeLostMenuOpen = false
+	lifeRestoreAvailable = false
+
+	if (choice1) {
+		choice1.disabled = false
+	}
+
+	if (choice2) {
+		choice2.disabled = false
+	}
+
+	playButtonClick()
+
+	// Сбрасываем игру
+
+	inventory = {}
+	messages = []
+
+	currentDialogue = "start"
+
+	anger = 0
+	lives = 3
+
+	hintCharges = 0
+	hintShown = false
+
+	specialChoiceUnlocked = false
+	specialChoiceUsed = false
+
+	lifeRestoreAvailable = false
+	isLifeLostMenuOpen = false
+
+	// Удаляем старое сохранение
+
+	localStorage.removeItem("verityGame")
+
+	// Очищаем сообщения на экране
+
+	const messagesContainer =
+		document.getElementById("messages")
+
+	if (messagesContainer) {
+		messagesContainer.innerHTML = ""
+	}
+
+	updateGameUI()
+
+	hideMainMenu()
+
+	renderDialogue()
+
+}
+
+
+function continueGame() {
+
+	playButtonClick()
+
+	const savedGame =
+		localStorage.getItem("verityGame")
+
+	if (!savedGame) {
+
+		alert("Сохранение не найдено.")
+
+		return
+	}
+
+	loadGame()
+
+	renderMessages()
+
+	updateGameUI()
+
+	hideMainMenu()
+
+	renderDialogue()
+
+}
+
+
+function showAbout() {
+
+	playButtonClick()
+
+	alert(
+		"VERITY\n\n" +
+		"Психологическая хоррор-игра о странном собеседнике, " +
+		"который, кажется, знает о тебе больше, чем должен.\n\n" +
+		"v1.0"
+	)
+
+}
+
+if (startButton) {
+
+	startButton.addEventListener(
+		"click",
+		startNewGame
+	)
+
+}
+
+
+if (continueButton) {
+
+	continueButton.addEventListener(
+		"click",
+		continueGame
+	)
+
+}
+
+
+if (aboutButton) {
+
+	aboutButton.addEventListener(
+		"click",
+		showAbout
+	)
+
+}
+
+
+
+
 // ==============================
 // ЗАПУСК
 // ==============================
@@ -3281,26 +3491,13 @@ if (choice2) {
 // всё сохранение сайта.
 //
 
-localStorage.clear()
-
 loadGame()
-
-
-renderMessages()
-
-updateGameUI()
-
-
-// Фоновые эффекты
 
 randomFlicker()
 randomGlitch()
 randomAvatarGlitch()
 randomStatusChange()
 randomAvatarChange()
-
-
-// Диалог
 
 loadDialogue()
 
@@ -3314,3 +3511,44 @@ console.log(
 		lives: lives
 	}
 )
+
+
+document
+	.getElementById("mainMenuButton")
+	.addEventListener("click", () => {
+		returnToMainMenu()
+	})
+
+function returnToMainMenu() {
+
+	document
+		.getElementById("gameOver")
+		.classList.remove("active")
+
+	document
+		.getElementById("verityScreamer")
+		.classList.remove("active")
+
+	document
+		.querySelector(".game")
+		.style.display = "none"
+
+	document
+		.getElementById("main-menu")
+		.style.display = "flex"
+}
+
+function skipToEnd() {
+	currentDialogue = "ending_approach"
+
+	anger = -26
+	lives = 3
+
+	messages = []
+
+	saveGame()
+	updateGameUI()
+	renderDialogue()
+
+	console.log("🛠️ DEV MODE: jumped to ending")
+}
