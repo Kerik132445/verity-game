@@ -1558,16 +1558,34 @@ function handleAngerMax() {
 
 function handleLoveMax() {
 
-	console.log(
-		"❤️ МАКСИМАЛЬНОЕ СЧАСТЬЕ"
-	)
+	console.log("❤️ ИГРА ПРОЙДЕНА")
 
-	console.log(
-		"УРОВЕНЬ ПРОЙДЕН"
-	)
+	gameFinished = true
 
+	saveGame()
+	updateGameUI()
+
+	setTimeout(() => {
+
+		const gameComplete =
+			document.getElementById("gameComplete")
+
+		if (!gameComplete) return
+
+		gameComplete.classList.add("active")
+
+	}, 1000)
 }
 
+function showGameComplete() {
+
+	const gameComplete =
+		document.getElementById("gameComplete")
+
+	if (!gameComplete) return
+
+	gameComplete.classList.add("active")
+}
 
 // ==============================
 // УРОВЕНЬ ХОРРОРА
@@ -1711,6 +1729,11 @@ function processAngerHorror() {
 			triggerRandomAngerEffect()
 		}
 
+		return
+	}
+
+	if (anger <= -MAX_LOVE) {
+		handleLoveMax()
 		return
 	}
 }
@@ -3555,16 +3578,16 @@ function returnToMainMenu() {
 		.classList.remove("active")
 
 	document
-		.getElementById("verityScreamer")
+		.getElementById("gameComplete")
 		.classList.remove("active")
 
 	document
-		.querySelector(".game")
-		.style.display = "none"
+		.getElementById("verityScreamer")
+		.classList.remove("active")
 
-	document
-		.getElementById("main-menu")
-		.style.display = "flex"
+	document.querySelector(".game").style.display = "none"
+
+	document.getElementById("main-menu").style.display = "flex"
 
 	if (continueButton) {
 		continueButton.disabled = gameFinished
@@ -3584,4 +3607,16 @@ function skipToEnd() {
 	renderDialogue()
 
 	console.log("🛠️ DEV MODE: jumped to ending")
+}
+
+
+const completeMainMenuButton =
+	document.getElementById("completeMainMenuButton")
+
+if (completeMainMenuButton) {
+
+	completeMainMenuButton.addEventListener(
+		"click",
+		returnToMainMenu
+	)
 }
