@@ -1,5 +1,9 @@
 let ysdk = null
 
+const isYandexGames = typeof YaGames !== "undefined"
+
+console.log("Яндекс SDK доступен:", isYandexGames)
+
 if (typeof YaGames !== "undefined") {
 
 	YaGames.init()
@@ -8,6 +12,12 @@ if (typeof YaGames !== "undefined") {
 			ysdk = _ysdk
 
 			console.log("Yandex Games SDK подключён")
+
+			if (
+				document.querySelector(".game")?.style.display === "flex"
+			) {
+				startYandexGameplay()
+			}
 
 		})
 		.catch((error) => {
@@ -21,6 +31,66 @@ if (typeof YaGames !== "undefined") {
 
 }
 
+
+function startYandexGameplay() {
+
+	if (!ysdk?.features?.GameplayAPI) {
+		console.log("⚠️ GameplayAPI ещё не готов")
+		return
+	}
+
+	ysdk.features.GameplayAPI.start()
+
+	console.log("🎮 Yandex Gameplay START")
+
+}
+
+
+function stopYandexGameplay() {
+
+	if (!ysdk?.features?.GameplayAPI) {
+		console.log("⚠️ GameplayAPI ещё не готов")
+		return
+	}
+
+	ysdk.features.GameplayAPI.stop()
+
+	console.log("⏸️ Yandex Gameplay STOP")
+
+}
+
+
+function pauseGame() {
+
+	if (isGamePaused) {
+		return
+	}
+
+	isGamePaused = true
+
+	pauseGameAudio()
+	stopYandexGameplay()
+
+	console.log("⏸️ ИГРА НА ПАУЗЕ")
+
+}
+
+
+function resumeGame() {
+
+	if (!isGamePaused) {
+		return
+	}
+
+	isGamePaused = false
+
+	resumeGameAudio()
+	startYandexGameplay()
+
+	console.log("▶️ ИГРА ПРОДОЛЖЕНА")
+
+}
+
 console.log("VERITY GAME ЗАПУЩЕН")
 
 // ==============================
@@ -29,6 +99,8 @@ console.log("VERITY GAME ЗАПУЩЕН")
 
 let inventory = {}
 let messages = []
+
+let isGamePaused = false
 
 let hintCharges = 0
 let hintShown = false
@@ -214,6 +286,10 @@ window.addEventListener('click', () => {
 
 function playButtonClick() {
 
+	if (isGamePaused) {
+		return
+	}
+
 	buttonClickSound.currentTime = 0
 	buttonClickSound.play()
 
@@ -221,6 +297,10 @@ function playButtonClick() {
 
 
 function playVerityMessageSound() {
+	if (isGamePaused) {
+		return
+	}
+
 	verityMessageSound.currentTime = 0
 
 	verityMessageSound.play().catch(error => {
@@ -230,6 +310,10 @@ function playVerityMessageSound() {
 
 
 function playPlayerMessageSound() {
+	if (isGamePaused) {
+		return
+	}
+
 	playerMessageSound.currentTime = 0
 
 	playerMessageSound.play().catch(error => {
@@ -239,6 +323,11 @@ function playPlayerMessageSound() {
 
 
 function playHintSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	hintSound.currentTime = 0
 
 	hintSound.play().catch(error => {
@@ -248,6 +337,11 @@ function playHintSound() {
 
 
 function playSpecialChoiceSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	specialChoiceSound.currentTime = 0
 
 	specialChoiceSound.play().catch(error => {
@@ -257,6 +351,11 @@ function playSpecialChoiceSound() {
 
 
 function playLifeLostSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	lifeLostSound.currentTime = 0
 
 	lifeLostSound.play().catch(error => {
@@ -266,6 +365,11 @@ function playLifeLostSound() {
 
 
 function playLifeRestoreSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	lifeRestoreSound.currentTime = 0
 
 	lifeRestoreSound.play().catch(error => {
@@ -275,6 +379,11 @@ function playLifeRestoreSound() {
 
 
 function playItemGetSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	itemGetSound.currentTime = 0
 
 	itemGetSound.play().catch(error => {
@@ -285,6 +394,11 @@ function playItemGetSound() {
 
 
 function playGlitchSound() {
+
+	if (isGamePaused) {
+		return
+	}
+
 	glitchSound.currentTime = 0
 
 	glitchSound.play().catch(error => {
@@ -294,6 +408,10 @@ function playGlitchSound() {
 
 
 function playHardGlitchSound() {
+
+	if (isGamePaused) {
+		return
+	}
 
 	hardGlitchSound.currentTime = 0
 
@@ -307,6 +425,10 @@ function playHardGlitchSound() {
 
 
 function playAdLoadingSound() {
+
+	if (isGamePaused) {
+		return
+	}
 
 	adLoadingSound.currentTime = 0
 
@@ -322,6 +444,10 @@ function playAdLoadingSound() {
 
 
 function playRandomSound() {
+	if (isGamePaused) {
+		return
+	}
+
 	const randomIndex =
 		Math.floor(Math.random() * randomSounds.length)
 
@@ -355,7 +481,31 @@ const MAX_LOVE = 30
 // ==============================
 
 function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
+
+	return new Promise(resolve => {
+
+		let elapsed = 0
+		const step = 50
+
+		const timer = setInterval(() => {
+
+			if (!isGamePaused) {
+
+				elapsed += step
+
+			}
+
+			if (elapsed >= ms) {
+
+				clearInterval(timer)
+				resolve()
+
+			}
+
+		}, step)
+
+	})
+
 }
 
 function showLifeLostMenu() {
@@ -482,6 +632,7 @@ function restoreLostLife() {
 				)
 
 				pauseGameAudio()
+				stopYandexGameplay()
 			},
 
 			onRewarded: () => {
@@ -512,6 +663,7 @@ function restoreLostLife() {
 			onClose: (wasShown) => {
 
 				resumeGameAudio()
+				startYandexGameplay()
 
 				if (lifeRewarded) {
 					playLifeRestoreSound()
@@ -605,6 +757,7 @@ function unlockSpecialChoice() {
 			onOpen: () => {
 				console.log("📺 Реклама открыта")
 				pauseGameAudio()
+				stopYandexGameplay()
 			},
 
 			onRewarded: () => {
@@ -642,6 +795,8 @@ function unlockSpecialChoice() {
 			onClose: (wasShown) => {
 
 				resumeGameAudio()
+				startYandexGameplay()
+
 				if (specialRewarded) {
 					playSpecialChoiceSound()
 				}
@@ -961,6 +1116,7 @@ function unlockHint() {
 			onOpen: () => {
 				console.log("📺 Реклама подсказки открыта")
 				pauseGameAudio()
+				stopYandexGameplay()
 			},
 
 			onRewarded: () => {
@@ -975,7 +1131,9 @@ function unlockHint() {
 			},
 
 			onClose: (wasShown) => {
+
 				resumeGameAudio()
+				startYandexGameplay()
 
 				button.disabled = false
 				button.classList.remove("loading")
@@ -1970,12 +2128,11 @@ function processAngerHorror() {
 
 function triggerRandomAngerEffect() {
 
-	playGlitchSound()
-
 	if (horrorEffectCooldown) {
 		return
 	}
 
+	playGlitchSound()
 
 	const effects = [
 
@@ -2463,7 +2620,7 @@ const items = [
 		description:
 			"Странная старая монета.",
 		rarity: "common",
-		chance: 50
+		chance: 40
 	},
 
 	{
@@ -2473,7 +2630,7 @@ const items = [
 		description:
 			"Неизвестно, что он открывает.",
 		rarity: "uncommon",
-		chance: 30
+		chance: 25
 	},
 
 	{
@@ -2493,7 +2650,7 @@ const items = [
 		description:
 			"Осколок старого зеркала. Странно, но твоё отражение в нём иногда улыбается раньше тебя.",
 		rarity: "epic",
-		chance: 8
+		chance: 10
 	},
 
 	{
@@ -2503,7 +2660,7 @@ const items = [
 		description:
 			"Небольшой стеклянный шарик, похожий на глаз. Иногда кажется, что он смотрит на тебя.",
 		rarity: "mythic",
-		chance: 4
+		chance: 6
 	},
 
 	{
@@ -2513,7 +2670,7 @@ const items = [
 		description:
 			'В записке кровью написано: "Верити не тот, за кого себя выдает. БЕГИ!!!"',
 		rarity: "legendary",
-		chance: 2
+		chance: 4
 	}
 
 ]
@@ -2763,7 +2920,7 @@ function rewardItemAd() {
 	}
 
 
-	const button = document.getElementById("item-ad-button")
+	const button = document.getElementById("itemAdButton")
 
 	if (!button) {
 		console.error("❌ Кнопка получения предмета не найдена")
@@ -2793,6 +2950,7 @@ function rewardItemAd() {
 			onOpen: () => {
 				console.log("📺 Реклама предмета открыта")
 				pauseGameAudio()
+				stopYandexGameplay()
 			},
 
 			onRewarded: () => {
@@ -2808,7 +2966,9 @@ function rewardItemAd() {
 			},
 
 			onClose: (wasShown) => {
+
 				resumeGameAudio()
+				startYandexGameplay()
 
 				button.disabled = false
 				button.classList.remove("loading")
@@ -2940,27 +3100,27 @@ if (itemAdButton) {
 // СКИНЫ
 // ==============================
 
-const skinButton =
-	document.getElementById(
-		"skinButton"
-	)
+//const skinButton =
+//	document.getElementById(
+//		"skinButton"
+//	)
 
 
-if (skinButton) {
+//if (skinButton) {
 
-	skinButton.addEventListener(
-		"click",
-		() => {
+//	skinButton.addEventListener(
+//		"click",
+//		() => {
 
-			playButtonClick()
-			alert(
-				"Система скинов пока находится в разработке."
-			)
+//			playButtonClick()
+//			alert(
+//				"Система скинов пока находится в разработке."
+//			)
+//
+//		}
+//	)
 
-		}
-	)
-
-}
+//}
 
 
 // ==============================
@@ -3061,7 +3221,7 @@ function randomFlicker() {
 		// Проверяем ещё раз,
 		// потому что anger мог измениться
 
-		if (anger > -30) {
+		if (!isGamePaused && anger > -30) {
 			screenFlicker()
 		}
 
@@ -3164,7 +3324,7 @@ function randomGlitch() {
 
 	setTimeout(() => {
 
-		if (anger > -30) {
+		if (!isGamePaused && anger > -30) {
 			screenGlitch()
 		}
 
@@ -3256,7 +3416,7 @@ function randomAvatarGlitch() {
 
 	setTimeout(() => {
 
-		if (anger >= 2) {
+		if (!isGamePaused && anger >= 2) {
 			avatarGlitch()
 		}
 
@@ -3347,7 +3507,7 @@ function randomStatusChange() {
 
 	setTimeout(() => {
 
-		if (anger >= 3) {
+		if (!isGamePaused && anger >= 3) {
 			changeVerityStatus()
 		}
 
@@ -3425,7 +3585,7 @@ function randomAvatarChange() {
 
 	setTimeout(() => {
 
-		if (anger >= 4) {
+		if (!isGamePaused && anger >= 4) {
 			changeVerityAvatar()
 		}
 
@@ -3572,6 +3732,7 @@ function hideMainMenu() {
 function startNewGame() {
 
 	gameFinished = false
+	isGamePaused = false
 
 	document.querySelector(".game").style.display = "flex"
 
@@ -3639,6 +3800,8 @@ function startNewGame() {
 
 	renderDialogue()
 
+	startYandexGameplay()
+
 }
 
 
@@ -3670,6 +3833,8 @@ function continueGame() {
 	hideMainMenu()
 
 	renderDialogue()
+
+	startYandexGameplay()
 
 }
 
@@ -3769,6 +3934,8 @@ document
 
 function returnToMainMenu() {
 
+	stopYandexGameplay()
+
 	document
 		.getElementById("gameOver")
 		.classList.remove("active")
@@ -3800,3 +3967,35 @@ if (completeMainMenuButton) {
 		returnToMainMenu
 	)
 }
+
+
+
+document.addEventListener("visibilitychange", () => {
+
+	console.log("👀 VISIBILITY CHANGE:", document.hidden)
+
+	if (document.hidden) {
+		pauseGame()
+	} else {
+		resumeGame()
+	}
+
+})
+
+
+window.addEventListener("blur", () => {
+
+	console.log("👋 WINDOW BLUR")
+
+	pauseGame()
+
+})
+
+
+window.addEventListener("focus", () => {
+
+	console.log("👀 WINDOW FOCUS")
+
+	resumeGame()
+
+})
