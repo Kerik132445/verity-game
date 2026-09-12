@@ -147,6 +147,19 @@
 
 				</div>
 
+				<div id="pauseMenu" class="pause-menu">
+					<div class="pause-window">
+						<h2>ПАУЗА</h2>
+
+						<button id="resumeButton">ПРОДОЛЖИТЬ</button>
+						<button id="mainMenuPauseButton">В ГЛАВНОЕ МЕНЮ</button>
+					</div>
+				</div>
+
+				<button id="pauseButton" class="pause-button">
+					<img src="images/pause.png" alt="Пауза">
+				</button>
+
 				<div id="lifeLostMenu" class="life-lost-overlay">
 					<div class="life-lost-menu">
 						<h2>ЖИЗНЬ ПОТЕРЯНА</h2>
@@ -322,6 +335,196 @@
 
 			<button id="completeMainMenuButton">
 				В ГЛАВНОЕ МЕНЮ
+			</button>
+
+		</div>
+
+	</div>
+
+	<!-- ============================== -->
+	<!-- ОБ ИГРЕ -->
+	<!-- ============================== -->
+
+	<div id="aboutModal" class="about-modal">
+
+		<div class="about-window">
+
+			<button id="closeAbout" class="about-close">×</button>
+
+			<div class="about-header">
+				<div class="about-glitch">// SYSTEM_INFO</div>
+				<h2>ОБ ИГРЕ</h2>
+			</div>
+
+			<div class="about-content">
+
+				<section class="about-section">
+					<h3>ЧТО ПРОИСХОДИТ?</h3>
+
+					<p>
+						Ты снова связался с Верити.
+					</p>
+
+					<p>
+						Сначала кажется, что это обычный разговор.
+						Но чем дольше вы общаетесь, тем сильнее становится
+						ощущение, что что-то не так.
+					</p>
+
+					<p>
+						Верити помнит то, чего не должен помнить.
+						Некоторые его слова кажутся знакомыми, а происходящее
+						вокруг постепенно становится всё страннее.
+					</p>
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>ЧТО НУЖНО ДЕЛАТЬ?</h3>
+
+					<p>
+						Общайся с Верити и выбирай ответы.
+						Каждый выбор влияет на его отношение к тебе.
+					</p>
+
+					<div class="about-stats">
+
+						<div class="about-stat anger">
+							<img src="images/angry.png" alt="Злость">
+
+							<div>
+								<strong>ЗЛОСТЬ</strong>
+								<span>Верити становится агрессивнее.</span>
+							</div>
+						</div>
+
+						<div class="about-stat love">
+							<img src="images/love.png" alt="Любовь">
+
+							<div>
+								<strong>ЛЮБОВЬ</strong>
+								<span>Верити становится спокойнее.</span>
+							</div>
+						</div>
+
+					</div>
+
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>СЛЕДИ ЗА ЗЛОСТЬЮ</h3>
+
+					<p>
+						Чем выше злость Верити, тем сильнее становятся
+						странные события.
+					</p>
+
+					<ul>
+						<li>появляются визуальные помехи;</li>
+						<li>экран начинает вести себя необычно;</li>
+						<li>могут происходить неожиданные события;</li>
+						<li>при максимальной злости ты теряешь жизнь.</li>
+					</ul>
+
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>ЖИЗНИ</h3>
+
+					<p>
+						У тебя есть 3 жизни.
+						Если все жизни закончатся, игра завершится.
+					</p>
+
+					<p>
+						Некоторые потерянные жизни можно восстановить
+						с помощью рекламы.
+					</p>
+
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>ПРЕДМЕТЫ</h3>
+
+					<p>
+						Во время игры ты можешь получать различные предметы.
+						Они попадают в инвентарь.
+					</p>
+
+					<p>
+						У каждого предмета есть своя редкость и описание.
+						Некоторые предметы получить намного сложнее других.
+					</p>
+
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>ПОДСКАЗКИ</h3>
+
+					<p>
+						Если не уверен в выборе, можешь воспользоваться
+						подсказкой.
+					</p>
+
+					<p>
+						Но не забывай: подсказка не всегда говорит тебе
+						всю правду.
+					</p>
+
+				</section>
+
+
+				<section class="about-section">
+
+					<h3>ОСОБЫЕ ВЫБОРЫ</h3>
+
+					<p>
+						Иногда появляется неизвестный вариант ответа.
+						Его ещё нужно открыть.
+					</p>
+
+					<p>
+						Кто знает, к чему он приведёт.
+					</p>
+
+				</section>
+
+
+				<div class="about-warning">
+
+					<div class="warning-title">
+						// ВАЖНО
+					</div>
+
+					<p>
+						Не пытайся просто угадывать правильные ответы.
+					</p>
+
+					<p>
+						Следи за словами Верити.
+						Запоминай детали.
+					</p>
+
+					<p class="warning-final">
+						И главное...
+						не думай, что Верити говорит тебе всё.
+					</p>
+
+				</div>
+
+			</div>
+
+			<button id="closeAboutBottom" class="about-back">
+				НАЗАД
 			</button>
 
 		</div>

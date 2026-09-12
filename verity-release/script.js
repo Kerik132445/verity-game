@@ -77,18 +77,19 @@ function pauseGame() {
 
 
 function resumeGame() {
-
-	if (!isGamePaused) {
-		return
-	}
+	if (!isGamePaused) return
 
 	isGamePaused = false
-
 	resumeGameAudio()
 	startYandexGameplay()
 
-	console.log("▶️ ИГРА ПРОДОЛЖЕНА")
+	const pauseMenu = document.getElementById("pauseMenu")
 
+	if (pauseMenu) {
+		pauseMenu.classList.remove("active")
+	}
+
+	console.log("▶️ ИГРА ПРОДОЛЖЕНА")
 }
 
 console.log("VERITY GAME ЗАПУЩЕН")
@@ -269,10 +270,7 @@ function resumeGameAudio() {
 let musicStarted = false
 
 function startBackgroundMusic() {
-
-	if (musicStarted) {
-		return
-	}
+	if (musicStarted) return
 
 	backgroundMusic.play()
 	musicStarted = true
@@ -3802,6 +3800,8 @@ function startNewGame() {
 
 	startYandexGameplay()
 
+	startBackgroundMusic()
+
 }
 
 
@@ -3836,6 +3836,8 @@ function continueGame() {
 
 	startYandexGameplay()
 
+	startBackgroundMusic()
+
 }
 
 
@@ -3843,12 +3845,28 @@ function showAbout() {
 
 	playButtonClick()
 
-	alert(
-		"VERITY\n\n" +
-		"Психологическая хоррор-игра о странном собеседнике, " +
-		"который, кажется, знает о тебе больше, чем должен.\n\n" +
-		"v1.0"
-	)
+	const aboutButton = document.getElementById("about-button")
+	const aboutModal = document.getElementById("aboutModal")
+	const closeAbout = document.getElementById("closeAbout")
+	const closeAboutBottom = document.getElementById("closeAboutBottom")
+
+	aboutButton.addEventListener("click", () => {
+		aboutModal.classList.add("active")
+	})
+
+	closeAbout.addEventListener("click", () => {
+		aboutModal.classList.remove("active")
+	})
+
+	closeAboutBottom.addEventListener("click", () => {
+		aboutModal.classList.remove("active")
+	})
+
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") {
+			aboutModal.classList.remove("active")
+		}
+	})
 
 }
 
@@ -3934,6 +3952,10 @@ document
 
 function returnToMainMenu() {
 
+	backgroundMusic.pause()
+	backgroundMusic.currentTime = 0
+	musicStarted = false
+
 	stopYandexGameplay()
 
 	document
@@ -3955,6 +3977,8 @@ function returnToMainMenu() {
 	if (continueButton) {
 		continueButton.disabled = gameFinished
 	}
+
+	startBackgroundMusic()
 }
 
 const completeMainMenuButton =
@@ -3998,4 +4022,26 @@ window.addEventListener("focus", () => {
 
 	resumeGame()
 
+})
+
+
+
+const pauseButton = document.getElementById("pauseButton")
+const pauseMenu = document.getElementById("pauseMenu")
+const resumeButton = document.getElementById("resumeButton")
+const mainMenuPauseButton = document.getElementById("mainMenuPauseButton")
+
+pauseButton.addEventListener("click", () => {
+	pauseGame()
+	pauseMenu.classList.add("active")
+})
+
+resumeButton.addEventListener("click", () => {
+	pauseMenu.classList.remove("active")
+	resumeGame()
+})
+
+mainMenuPauseButton.addEventListener("click", () => {
+	pauseMenu.classList.remove("active")
+	returnToMainMenu()
 })
