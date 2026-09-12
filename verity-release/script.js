@@ -3819,7 +3819,7 @@ function continueGame() {
 
 	if (!savedGame) {
 
-		alert("Сохранение не найдено.")
+		showNoSaveModal()
 
 		return
 	}
@@ -3869,6 +3869,30 @@ function showAbout() {
 	})
 
 }
+
+
+const noSaveModal = document.getElementById("noSaveModal")
+const closeNoSave = document.getElementById("closeNoSave")
+
+function showNoSaveModal() {
+	noSaveModal.classList.add("active")
+}
+
+function hideNoSaveModal() {
+	noSaveModal.classList.remove("active")
+}
+
+closeNoSave.addEventListener("click", () => {
+	hideNoSaveModal()
+})
+
+document.addEventListener("keydown", (event) => {
+	if (event.key === "Escape") {
+		hideNoSaveModal()
+	}
+})
+
+
 
 if (startButton) {
 

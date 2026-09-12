@@ -4218,3 +4218,184 @@ body {
 	}
 
 }
+
+
+
+/* ============================== */
+/* НЕТ СОХРАНЕНИЯ */
+/* ============================== */
+
+.no-save-modal {
+	position: fixed;
+	inset: 0;
+
+	display: none;
+	align-items: center;
+	justify-content: center;
+
+	z-index: 2100;
+
+	background: rgba(0, 0, 0, 0.8);
+	backdrop-filter: blur(5px);
+}
+
+.no-save-modal.active {
+	display: flex;
+}
+
+
+.no-save-window {
+	position: relative;
+
+	width: min(420px, 85vw);
+
+	padding: 32px;
+
+	text-align: center;
+
+	background: rgba(8, 8, 8, 0.97);
+
+	border: 1px solid rgba(255, 255, 255, 0.16);
+
+	box-shadow:
+		0 0 35px rgba(0, 0, 0, 0.9),
+		inset 0 0 25px rgba(255, 255, 255, 0.02);
+
+	color: white;
+
+	animation: noSaveAppear 0.2s ease;
+}
+
+
+/* Маленькая системная надпись */
+
+.no-save-code {
+	margin-bottom: 20px;
+
+	font-size: 10px;
+	letter-spacing: 2px;
+
+	color: rgba(255, 255, 255, 0.3);
+}
+
+
+/* Значок */
+
+.no-save-icon {
+	width: 52px;
+	height: 52px;
+
+	margin: 0 auto 18px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	border: 1px solid rgba(255, 255, 255, 0.2);
+
+	color: rgba(255, 255, 255, 0.7);
+
+	font-size: 25px;
+	font-family: monospace;
+
+	box-shadow:
+		0 0 15px rgba(255, 255, 255, 0.04);
+}
+
+
+/* Заголовок */
+
+.no-save-window h2 {
+	margin: 0 0 15px;
+
+	font-size: 18px;
+	letter-spacing: 2px;
+
+	color: white;
+}
+
+
+/* Основной текст */
+
+.no-save-window p {
+	margin: 0;
+
+	font-size: 13px;
+	line-height: 1.6;
+
+	color: rgba(255, 255, 255, 0.65);
+}
+
+.no-save-subtext {
+	margin-top: 5px !important;
+
+	color: rgba(255, 255, 255, 0.4) !important;
+}
+
+
+/* Кнопка */
+
+#closeNoSave {
+	width: 170px;
+
+	margin-top: 25px;
+	padding: 11px;
+
+	border: 1px solid rgba(255, 255, 255, 0.18);
+
+	background: rgba(255, 255, 255, 0.05);
+
+	color: white;
+
+	font-size: 12px;
+	letter-spacing: 2px;
+
+	cursor: pointer;
+
+	transition:
+		background 0.15s ease,
+		transform 0.15s ease;
+}
+
+#closeNoSave:hover {
+	background: rgba(255, 255, 255, 0.1);
+
+	transform: translateY(-1px);
+}
+
+#closeNoSave:active {
+	transform: scale(0.97);
+}
+
+
+/* Появление */
+
+@keyframes noSaveAppear {
+
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+}
+
+
+/* Мобильные */
+
+@media (max-width: 600px) {
+
+	.no-save-window {
+		width: 85vw;
+		padding: 25px;
+	}
+
+	.no-save-window h2 {
+		font-size: 16px;
+	}
+
+}
