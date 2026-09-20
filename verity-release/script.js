@@ -2218,40 +2218,33 @@ async function initGame() {
 	// FLICKER
 	// ==============================
 
-	function triggerAngerFlicker() {
+	function triggerAngerAvatar() {
 
-		if (isGamePaused) return
-
-		console.log(
-			"HORROR: FLICKER",
-			"anger:",
-			anger
-		)
-
-
-		const phoneScreen =
-			document.querySelector(
-				".phone-screen"
-			)
-
-		if (!phoneScreen) {
+		if (isGamePaused) {
 			return
 		}
 
+		console.log("HORROR: AVATAR", "anger:", anger)
 
-		phoneScreen.classList.add(
-			"flicker"
-		)
+		const avatar = document.querySelector(".chat-header .avatar img")
+		if (!avatar) return
 
+		const normalAvatar = "images/verity.png"
+		const scaryAvatar = "images/verity-v2.png"
+
+		avatar.src = scaryAvatar
+
+		const duration = 300 + Math.random() * 1700
 
 		setTimeout(() => {
 
-			phoneScreen.classList.remove(
-				"flicker"
-			)
+			if (isGamePaused) {
+				return
+			}
 
-		}, 80 + Math.random() * 180)
+			avatar.src = normalAvatar
 
+		}, duration)
 	}
 
 
@@ -2311,48 +2304,31 @@ async function initGame() {
 	// ==============================
 
 	function triggerAngerStatus() {
-		if (isGamePaused) return
 
-		console.log(
-			"HORROR: STATUS",
-			"anger:",
-			anger
-		)
-
-
-		const status =
-			document.querySelector(
-				".chat-status"
-			)
-
-		if (!status) {
+		if (isGamePaused) {
 			return
 		}
 
+		console.log("HORROR: STATUS", "anger:", anger)
 
-		const originalText =
-			status.textContent
+		const status = document.querySelector(".chat-status")
+		if (!status) return
 
+		const originalText = status.textContent
 
-		status.textContent =
-			"не в сети"
-
-		status.classList.add(
-			"offline"
-		)
-
+		status.textContent = "не в сети"
+		status.classList.add("offline")
 
 		setTimeout(() => {
 
-			status.textContent =
-				originalText || "в сети"
+			if (isGamePaused) {
+				return
+			}
 
-			status.classList.remove(
-				"offline"
-			)
+			status.textContent = originalText || "в сети"
+			status.classList.remove("offline")
 
 		}, 1000 + Math.random() * 2500)
-
 	}
 
 
@@ -2424,6 +2400,9 @@ async function initGame() {
 	// ==============================
 
 	function updateGameUI() {
+		if (isGamePaused) {
+			return
+		}
 
 		const relationshipPoint =
 			document.getElementById(
@@ -2946,7 +2925,7 @@ async function initGame() {
 			button.disabled = false
 			button.classList.remove("loading")
 			if (buttonText) {
-				buttonText.textContent = "🎁 Получить предмет"
+				buttonText.textContent = "Получить предмет"
 			}
 
 			return
@@ -2981,7 +2960,7 @@ async function initGame() {
 					button.disabled = false
 					button.classList.remove("loading")
 					if (buttonText) {
-						buttonText.textContent = "🎁 Получить предмет"
+						buttonText.textContent = "Получить предмет"
 					}
 
 					if (itemRewarded) {
@@ -3002,7 +2981,7 @@ async function initGame() {
 					button.disabled = false
 					button.classList.remove("loading")
 					if (buttonText) {
-						buttonText.textContent = "🎁 Получить предмет"
+						buttonText.textContent = "Получить предмет"
 					}
 				}
 			}
@@ -3153,6 +3132,10 @@ async function initGame() {
 
 	function screenFlicker() {
 
+		if (isGamePaused) {
+			return
+		}
+
 		const phoneScreen =
 			document.querySelector(
 				".phone-screen"
@@ -3250,6 +3233,10 @@ async function initGame() {
 
 	function screenGlitch() {
 
+		if (isGamePaused) {
+			return
+		}
+
 		playHardGlitchSound()
 
 		const phoneScreen =
@@ -3286,6 +3273,10 @@ async function initGame() {
 
 
 	function randomGlitch() {
+
+		if (isGamePaused) {
+			return
+		}
 
 		let minDelay
 		let maxDelay
@@ -3336,7 +3327,12 @@ async function initGame() {
 
 		setTimeout(() => {
 
-			if (!isGamePaused && anger > -30) {
+			if (isGamePaused) {
+				randomGlitch()
+				return
+			}
+
+			if (anger > -30) {
 				screenGlitch()
 			}
 
@@ -3352,6 +3348,10 @@ async function initGame() {
 	// ==============================
 
 	function avatarGlitch() {
+
+		if (isGamePaused) {
+			return
+		}
 
 		const avatar =
 			document.querySelector(
@@ -3445,6 +3445,10 @@ async function initGame() {
 
 	function changeVerityStatus() {
 
+		if (isGamePaused) {
+			return
+		}
+
 		const status =
 			document.querySelector(
 				".chat-status"
@@ -3535,6 +3539,10 @@ async function initGame() {
 	// ==============================
 
 	function changeVerityAvatar() {
+
+		if (isGamePaused) {
+			return
+		}
 
 		const avatar =
 			document.querySelector(
@@ -3839,6 +3847,8 @@ async function initGame() {
 		}
 
 		loadGame()
+
+		document.querySelector(".game").style.display = "flex"
 
 		renderMessages()
 
