@@ -1,3 +1,4 @@
+let player = null
 let ysdk = null
 let lang = "ru"
 
@@ -12,6 +13,17 @@ async function initGame() {
 		console.log("Язык игрока:", lang)
 		console.log("Yandex Games SDK подключён")
 
+		try {
+			player = await ysdk.getPlayer({
+				scopes: false
+			})
+
+			console.log("Yandex Player API подключён")
+		} catch (error) {
+			console.error("Ошибка Yandex Player API:", error)
+			player = null
+		}
+
 	} catch (error) {
 
 		console.error(
@@ -20,12 +32,6 @@ async function initGame() {
 		)
 
 		lang = "ru"
-	}
-
-	if (
-		document.querySelector(".game")?.style.display === "flex"
-	) {
-		startYandexGameplay()
 	}
 
 	console.log("VERITY GAME ЗАПУЩЕН")
@@ -271,6 +277,19 @@ async function initGame() {
 		backgroundMusic.play()
 		musicStarted = true
 	}
+
+	const gameAreas = [
+		document.querySelector(".game"),
+		document.getElementById("main-menu")
+	]
+
+	gameAreas.forEach((area) => {
+		if (!area) return
+
+		area.addEventListener("contextmenu", (event) => {
+			event.preventDefault()
+		})
+	})
 
 	window.addEventListener('click', () => {
 		backgroundMusic.play().catch(error => {
@@ -917,64 +936,137 @@ async function initGame() {
 	// СОХРАНЕНИЕ
 	// ==============================
 
-	function saveGame() {
+	async function saveGame() {
 
 		const gameData = {
-			inventory: inventory,
-			messages: messages,
-			currentDialogue: currentDialogue,
-			anger: anger,
-			lives: lives,
-			gameFinished: gameFinished
+			inventory,
+			messages,
+			currentDialogue,
+			anger,
+			lives,
+			gameFinished
 		}
 
+		// Локальное сохранение как fallback
 		localStorage.setItem(
 			"verityGame",
 			JSON.stringify(gameData)
 		)
-	}
 
-
-	function loadGame() {
-
-		const savedGame =
-			localStorage.getItem("verityGame")
-
-		if (!savedGame) {
+		// Сохранение через Yandex Player API
+		if (!player) {
 			return
 		}
 
 		try {
 
-			const gameData =
-				JSON.parse(savedGame)
+			await player.setData(
+				{
+					verityGame: gameData
+				},
+				true
+			)
 
-			inventory =
-				gameData.inventory ?? {}
-
-			messages =
-				gameData.messages ?? []
-
-			currentDialogue =
-				gameData.currentDialogue ?? "start"
-
-			anger =
-				gameData.anger ?? 0
-
-			lives =
-				gameData.lives ?? 3
-
-			gameFinished =
-				gameData.gameFinished ?? false
+			console.log("💾 Игра сохранена через Yandex Player API")
 
 		} catch (error) {
 
 			console.error(
-				"Ошибка загрузки сохранения:",
+				"❌ Ошибка сохранения через Yandex Player API:",
 				error
 			)
 
 		}
+	}
+
+
+	async function loadGame() {
+
+		let gameData = null
+
+		// Сначала пробуем Yandex Player API
+		if (player) {
+
+			try {
+
+				const savedData = await player.getData([
+					"verityGame"
+				])
+
+				if (savedData?.verityGame) {
+
+					gameData = savedData.verityGame
+
+					console.log(
+						"📂 Игра загружена через Yandex Player API"
+					)
+
+				}
+
+			} catch (error) {
+
+				console.error(
+					"❌ Ошибка загрузки через Yandex Player API:",
+					error
+				)
+
+			}
+
+		}
+
+		// Если Yandex сохранения нет,
+		// используем localStorage
+		if (!gameData) {
+
+			const savedGame =
+				localStorage.getItem("verityGame")
+
+			if (!savedGame) {
+				return false
+			}
+
+			try {
+
+				gameData =
+					JSON.parse(savedGame)
+
+				console.log(
+					"📂 Игра загружена из localStorage"
+				)
+
+			} catch (error) {
+
+				console.error(
+					"Ошибка загрузки localStorage:",
+					error
+				)
+
+				return false
+			}
+
+		}
+
+		inventory =
+			gameData.inventory ?? {}
+
+		messages =
+			gameData.messages ?? []
+
+		currentDialogue =
+			gameData.currentDialogue ?? "start"
+
+		anger =
+			gameData.anger ?? 0
+
+		lives =
+			gameData.lives ?? 3
+
+		gameFinished =
+			gameData.gameFinished ?? false
+
+
+		return true
+
 	}
 
 
@@ -2133,7 +2225,7 @@ async function initGame() {
 		const effects = [
 
 			triggerAngerGlitch,
-			triggerAngerFlicker,
+			screenFlicker,
 			triggerAngerAvatar,
 			triggerAngerStatus
 
@@ -2213,39 +2305,6 @@ async function initGame() {
 
 	}
 
-
-	// ==============================
-	// FLICKER
-	// ==============================
-
-	function triggerAngerAvatar() {
-
-		if (isGamePaused) {
-			return
-		}
-
-		console.log("HORROR: AVATAR", "anger:", anger)
-
-		const avatar = document.querySelector(".chat-header .avatar img")
-		if (!avatar) return
-
-		const normalAvatar = "images/verity.png"
-		const scaryAvatar = "images/verity-v2.png"
-
-		avatar.src = scaryAvatar
-
-		const duration = 300 + Math.random() * 1700
-
-		setTimeout(() => {
-
-			if (isGamePaused) {
-				return
-			}
-
-			avatar.src = normalAvatar
-
-		}, duration)
-	}
 
 
 	// ==============================
@@ -3749,7 +3808,7 @@ async function initGame() {
 	}
 
 
-	function startNewGame() {
+	async function startNewGame() {
 
 		gameFinished = false
 		isGamePaused = false
@@ -3803,7 +3862,7 @@ async function initGame() {
 
 		// Удаляем старое сохранение
 
-		localStorage.removeItem("verityGame")
+		await clearGameSave()
 
 		// Очищаем сообщения на экране
 
@@ -3827,26 +3886,25 @@ async function initGame() {
 	}
 
 
-	function continueGame() {
-
-		if (gameFinished) {
-			console.log("❌ Игра уже закончена")
-			return
-		}
+	async function continueGame() {
 
 		playButtonClick()
 
-		const savedGame =
-			localStorage.getItem("verityGame")
+		const loaded = await loadGame()
 
-		if (!savedGame) {
+		if (!loaded) {
 
 			showNoSaveModal()
 
 			return
 		}
 
-		loadGame()
+		if (gameFinished) {
+
+			console.log("❌ Игра уже закончена")
+
+			return
+		}
 
 		document.querySelector(".game").style.display = "flex"
 
@@ -3861,7 +3919,6 @@ async function initGame() {
 		startYandexGameplay()
 
 		startBackgroundMusic()
-
 	}
 
 
@@ -3962,7 +4019,7 @@ async function initGame() {
 	// всё сохранение сайта.
 	//
 
-	loadGame()
+	await loadGame()
 
 
 	if (continueButton) {
@@ -4038,6 +4095,36 @@ async function initGame() {
 			"click",
 			returnToMainMenu
 		)
+	}
+
+	async function clearGameSave() {
+
+		localStorage.removeItem("verityGame")
+
+		if (!player) {
+			return
+		}
+
+		try {
+
+			await player.setData(
+				{
+					verityGame: {}
+				},
+				true
+			)
+
+			console.log("🗑️ Yandex сохранение удалено")
+
+		} catch (error) {
+
+			console.error(
+				"❌ Ошибка удаления сохранения:",
+				error
+			)
+
+		}
+
 	}
 
 
